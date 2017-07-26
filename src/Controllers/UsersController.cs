@@ -1,5 +1,5 @@
-﻿using HappyTokenApi.Models;
-using HappyTokenApi.Data;
+﻿using HappyTokenApi.Data.Core;
+using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -10,18 +10,18 @@ namespace HappyTokenApi.Controllers
     [Route("[controller]")]
     public class UsersController : Controller
     {
-        private readonly ApiDbContext m_ApiDbContext;
+        private readonly CoreDbContext m_ApiDbContext;
 
-        public UsersController(ApiDbContext apiDbContext)
+        public UsersController(CoreDbContext apiDbContext)
         {
             m_ApiDbContext = apiDbContext;
         }
 
-        [HttpGet("{id:string}", Name = nameof(GetUserById))]
-        public async Task<IActionResult> GetUserById(string id)
+        [HttpGet("{userId}", Name = nameof(GetUserById))]
+        public async Task<IActionResult> GetUserById(string userId)
         {
             var dbUser = await m_ApiDbContext.Users
-                .Where(dbu => dbu.Id == id)
+                .Where(dbu => dbu.UserId == userId)
                 .SingleOrDefaultAsync();
 
             if (dbUser == null)
@@ -31,10 +31,13 @@ namespace HappyTokenApi.Controllers
 
             var response = new User()
             {
-                Href = Url.Link(nameof(GetUserById), new { id = dbUser.Id }),
+                Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
                 Method = "GET",
-                FirstName = dbUser.FirstName,
-                LastName = dbUser.LastName
+                UserId = dbUser.UserId,
+                Email = dbUser.Email,
+                Password = dbUser.Password,
+                DeviceId = dbUser.DeviceId,
+                SessionToken = dbUser.SessionToken
             };
 
             return Ok(response);
@@ -46,10 +49,13 @@ namespace HappyTokenApi.Controllers
             var users = (await m_ApiDbContext.Users.ToArrayAsync())
                 .Select(dbUser => new User
                 {
-                    Href = Url.Link(nameof(GetUserById), new { id = dbUser.Id }),
+                    Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
                     Method = "GET",
-                    FirstName = dbUser.FirstName,
-                    LastName = dbUser.LastName
+                    UserId = dbUser.UserId,
+                    Email = dbUser.Email,
+                    Password = dbUser.Password,
+                    DeviceId = dbUser.DeviceId,
+                    SessionToken = dbUser.SessionToken
                 })
                 .ToArray();
 

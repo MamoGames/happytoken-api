@@ -1,4 +1,6 @@
-﻿using ArangoDB.Client;
+﻿using System.Collections.Generic;
+using ArangoDB.Client;
+using HappyTokenApi.Models;
 
 namespace HappyTokenApi.Data.Config.Entities
 {
@@ -8,14 +10,12 @@ namespace HappyTokenApi.Data.Config.Entities
         [DocumentProperty(Identifier = IdentifierType.Key)]
         public string Key { get; set; }
 
-        public int Xp { get; set; }
+        public Wallet Wallet { get; set; }
 
-        public int Gold { get; set; }
+        public HappinessIndex HappinessIndex { get; set; }
 
-        public int HappyTokens { get; set; }
+        public List<AvatarType> AvatarTypes { get; set; }
 
-        public int Gems { get; set; }
-
-        public int Happiness { get; set; }
+        public List<BuildingType> BuildingTypes { get; set; }
     }
 }

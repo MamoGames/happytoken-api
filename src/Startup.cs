@@ -1,6 +1,6 @@
 ﻿using HappyTokenApi.Data.Config;
 using HappyTokenApi.Data.Core;
-using HappyTokenApi.Data.Entities;
+using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HappyTokenApi
 {
-    public class Startup
+    public partial class Startup
     {
         public IConfigurationRoot Configuration { get; }
 
@@ -54,26 +54,9 @@ namespace HappyTokenApi
                 .ConfigureConnection()
                 .LoadConfigDataFromDb();
 
+            ConfigureAuth(app);
+
             app.UseMvc();
         }
-
-        //private static void AddTestData(ApiDbContext context)
-        //{
-        //    context.Users.Add(new DbUser()
-        //    {
-        //        Id = 17,
-        //        FirstName = "Luke",
-        //        LastName = "Skywalker"
-        //    });
-
-        //    context.Users.Add(new DbUser()
-        //    {
-        //        Id = 18,
-        //        FirstName = "Han",
-        //        LastName = "Solo"
-        //    });
-
-        //    context.SaveChanges();
-        //}
     }
 }

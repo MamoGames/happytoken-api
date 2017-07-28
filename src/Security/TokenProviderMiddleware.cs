@@ -36,13 +36,11 @@ namespace HappyTokenApi.Security
             }
 
             // Request must be POST with Content-Type: application/x-www-form-urlencoded
-            if (!context.Request.Method.Equals("POST")
-                || !context.Request.HasFormContentType)
+            if (!context.Request.Method.Equals("POST") || !context.Request.HasFormContentType)
             {
                 context.Response.StatusCode = 400;
                 return context.Response.WriteAsync("Bad request.");
             }
-
 
             return GenerateToken(context);
         }
@@ -53,6 +51,7 @@ namespace HappyTokenApi.Security
             var password = context.Request.Form["password"];
 
             var identity = await m_Options.IdentityResolver(username, password);
+
             if (identity == null)
             {
                 context.Response.StatusCode = 400;

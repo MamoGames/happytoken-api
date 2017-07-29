@@ -1,7 +1,6 @@
-﻿using System;
-using System.Security.Claims;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
 
 namespace HappyTokenApi.Security
 {
@@ -10,8 +9,8 @@ namespace HappyTokenApi.Security
         /// <summary>
         /// The relative request path to listen on.
         /// </summary>
-        /// <remarks>The default path is <c>/token</c>.</remarks>
-        public string Path { get; set; } = "/token";
+        /// <remarks>The default path is <c>/authentication</c>.</remarks>
+        public string Path { get; set; } = "/authentication";
 
         /// <summary>
         ///  The Issuer (iss) claim for generated tokens.
@@ -27,7 +26,7 @@ namespace HappyTokenApi.Security
         /// The expiration time for the generated tokens.
         /// </summary>
         /// <remarks>The default is five minutes (300 seconds).</remarks>
-        public TimeSpan Expiration { get; set; } = TimeSpan.FromMinutes(5);
+        public TimeSpan Expiration { get; } = TimeSpan.FromMinutes(5);
 
         /// <summary>
         /// The signing key to use when generating tokens.
@@ -35,14 +34,9 @@ namespace HappyTokenApi.Security
         public SigningCredentials SigningCredentials { get; set; }
 
         /// <summary>
-        /// Resolves a user identity given a username and password.
-        /// </summary>
-        public Func<string, string, Task<ClaimsIdentity>> IdentityResolver { get; set; }
-
-        /// <summary>
         /// Generates a random value (nonce) for each generated token.
         /// </summary>
         /// <remarks>The default nonce is a random GUID.</remarks>
-        public Func<Task<string>> NonceGenerator { get; set; } = () => Task.FromResult(Guid.NewGuid().ToString());
+        public Func<Task<string>> NonceGenerator { get; } = () => Task.FromResult(Guid.NewGuid().ToString());
     }
 }

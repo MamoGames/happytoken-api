@@ -17,6 +17,6 @@ namespace HappyTokenApi.Data.Core.Entities
 
         public string DeviceId { get; set; }
 
-        public string SessionToken { get; set; }
+        public string AuthToken { get; set; }
     }
 }

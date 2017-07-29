@@ -1,14 +1,12 @@
-﻿using System;
-using HappyTokenApi.Data.Core;
+﻿using HappyTokenApi.Data.Core;
+using HappyTokenApi.Data.Core.Entities;
 using HappyTokenApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using HappyTokenApi.Data.Core.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace HappyTokenApi.Controllers
 {
@@ -23,11 +21,16 @@ namespace HappyTokenApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUserByDeviceId([FromBody] string deviceId)
+        public async Task<IActionResult> CreateUserByDeviceId([FromBody] UserDevice userDevice)
         {
+            if (string.IsNullOrEmpty(userDevice?.DeviceId))
+            {
+                return BadRequest("DeviceId was invalid.");
+            }
+
             // Check if DeviceId exists
             var dbUser = await m_CoreDbContext.Users
-                .Where(dbu => dbu.DeviceId == deviceId)
+                .Where(dbu => dbu.DeviceId == userDevice.DeviceId)
                 .SingleOrDefaultAsync();
 
             // If it does not exist, create a new user
@@ -36,10 +39,8 @@ namespace HappyTokenApi.Controllers
                 dbUser = new DbUser()
                 {
                     UserId = Guid.NewGuid().ToString(),
-                    DeviceId = deviceId,
-                    Email = "",
-                    Password = "",
-                    SessionToken = Guid.NewGuid().ToString()
+                    DeviceId = userDevice.DeviceId,
+                    AuthToken = Guid.NewGuid().ToString()
                 };
 
                 // Add the user
@@ -49,21 +50,16 @@ namespace HappyTokenApi.Controllers
                 await m_CoreDbContext.SaveChangesAsync();
 
                 // Create the user to send back to the client
-                var response = new User()
+                var response = new UserAuthPair()
                 {
-                    Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
-                    Method = "GET",
                     UserId = dbUser.UserId,
-                    Email = dbUser.Email,
-                    Password = dbUser.Password,
-                    DeviceId = dbUser.DeviceId,
-                    SessionToken = dbUser.SessionToken
+                    AuthToken = dbUser.AuthToken
                 };
 
                 return Ok(response);
             }
 
-            // USer with this DeviceId already exists
+            // User with this DeviceId already exists
             return Forbid();
         }
 
@@ -80,18 +76,18 @@ namespace HappyTokenApi.Controllers
                 return NotFound();
             }
 
-            var response = new User()
-            {
-                Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
-                Method = "GET",
-                UserId = dbUser.UserId,
-                Email = dbUser.Email,
-                Password = dbUser.Password,
-                DeviceId = dbUser.DeviceId,
-                SessionToken = dbUser.SessionToken
-            };
+            //var response = new User()
+            //{
+            //    Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
+            //    Method = "GET",
+            //    UserId = dbUser.UserId,
+            //    Email = dbUser.Email,
+            //    Password = dbUser.Password,
+            //    DeviceId = dbUser.DeviceId,
+            //    SessionToken = dbUser.SessionToken
+            //};
 
-            return Ok(response);
+            return Ok("dawg");
         }
 
         //[HttpGet(Name = nameof(GetAllUsers))]

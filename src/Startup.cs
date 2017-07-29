@@ -71,18 +71,15 @@ namespace HappyTokenApi
 
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(tokenSettings.SecretKey));
 
-            var tokenIdentityValidation = new TokenIdentityValidation();
-
             var tokenProviderOptions = new TokenProviderOptions
             {
                 Path = tokenSettings.TokenPath,
                 Audience = tokenSettings.Audience,
                 Issuer = tokenSettings.Issuer,
                 SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
-                IdentityResolver = tokenIdentityValidation.GetClaimsIdentity
             };
 
-             var tokenValidationParameters = new TokenValidationParameters
+            var tokenValidationParameters = new TokenValidationParameters
             {
                 // The signing key must match!
                 ValidateIssuerSigningKey = true,

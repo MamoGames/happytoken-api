@@ -14,7 +14,5 @@ namespace HappyTokenApi.Models
         public string Audience { get; set; }
 
         public string TokenPath { get; set; }
-
-        public string CookieName { get; set; }
     }
 }

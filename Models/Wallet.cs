@@ -4,8 +4,6 @@ namespace HappyTokenApi.Models
 {
     public class Wallet
     {
-        public int Xp { get; set; }
-
         public int Gold { get; set; }
 
         public int HappyTokens { get; set; }

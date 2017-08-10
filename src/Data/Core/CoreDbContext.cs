@@ -7,6 +7,18 @@ namespace HappyTokenApi.Data.Core
     {
         public DbSet<DbUser> Users { get; set; }
 
+        public DbSet<DbUserProfile> UsersProfiles { get; set; }
+
+        public DbSet<DbUserWallet> UsersWallets { get; set; }
+
+        public DbSet<DbUserHappiness> UsersHappiness { get; set; }
+
+        public DbSet<DbUserBuilding> UsersBuildings { get; set; }
+
+        public DbSet<DbUserAvatar> UsersAvatars { get; set; }
+
+        public DbSet<DbUserCakes> UsersCakes { get; set; }
+
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

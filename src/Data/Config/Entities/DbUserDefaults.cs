@@ -10,9 +10,11 @@ namespace HappyTokenApi.Data.Config.Entities
         [DocumentProperty(Identifier = IdentifierType.Key)]
         public string Key { get; set; }
 
+        public Profile Profile { get; set; }
+
         public Wallet Wallet { get; set; }
 
-        public HappinessIndex HappinessIndex { get; set; }
+        public Happiness Happiness { get; set; }
 
         public List<AvatarType> AvatarTypes { get; set; }
 

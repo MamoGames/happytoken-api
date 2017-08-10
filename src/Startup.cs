@@ -36,12 +36,20 @@ namespace HappyTokenApi
             services.Configure<ConfigDbSettings>(Configuration.GetSection("ConfigDbSettings"));
             services.Configure<CoreDbSettings>(Configuration.GetSection("CoreDbSettings"));
 
-            // Setup the PostgreSQL DB cone
+            // Setup the PostgreSQL Core DB
             var coreDbSettings = Configuration.GetSection("CoreDbSettings").Get<CoreDbSettings>();
             services.AddDbContext<CoreDbContext>(options =>
             {
                 options.UseNpgsql(coreDbSettings.ConnectionString);
             });
+
+            // Setup the ArangoDB Config DB
+            var configDbSettings = Configuration.GetSection("ConfigDbSettings").Get<ConfigDbSettings>();
+            var configDbContext = new ConfigDbContext(configDbSettings)
+                .ConfigureConnection()
+                .LoadConfigDataFromDb();
+
+            services.AddSingleton(configDbContext);
 
             services.AddRouting(options => options.LowercaseUrls = true);
 
@@ -53,12 +61,7 @@ namespace HappyTokenApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            // Setup the ArangoDB Config DB data in the ConfigDbContext
-            var configDbSettings = Configuration.GetSection("ConfigDbSettings").Get<ConfigDbSettings>();
-            var configDbContext = new ConfigDbContext()
-                .SetConfigDbSettings(configDbSettings)
-                .ConfigureConnection()
-                .LoadConfigDataFromDb();
+
 
             ConfigureAuth(app);
 

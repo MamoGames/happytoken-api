@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
-    public class UserBuilding
+    public class UserAvatar
     {
-        public BuildingType BuildingType { get; set; }
+        public AvatarType AvatarType { get; set; }
+
+        public int Pieces { get; set; }
 
         public int Level { get; set; }
     }

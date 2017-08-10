@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HappyTokenApi.Data.Config;
 
 namespace HappyTokenApi.Controllers
 {
@@ -15,9 +17,12 @@ namespace HappyTokenApi.Controllers
     {
         private readonly CoreDbContext m_CoreDbContext;
 
-        public UsersController(CoreDbContext coreDbContext)
+        private readonly ConfigDbContext m_ConfigDbContext;
+
+        public UsersController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
         {
             m_CoreDbContext = coreDbContext;
+            m_ConfigDbContext = configDbContext;
         }
 
         [HttpPost]
@@ -36,15 +41,104 @@ namespace HappyTokenApi.Controllers
             // If it does not exist, create a new user
             if (dbUser == null)
             {
-                dbUser = new DbUser()
+                var userId = Guid.NewGuid().ToString();
+                var authToken = Guid.NewGuid().ToString();
+
+                // User data
+                dbUser = new DbUser
                 {
-                    UserId = Guid.NewGuid().ToString(),
+                    UserId = userId,
                     DeviceId = userDevice.DeviceId,
-                    AuthToken = Guid.NewGuid().ToString()
+                    AuthToken = authToken
                 };
 
-                // Add the user
+                // Users default profile
+                var dbUserProfile = new DbUserProfile
+                {
+                    UsersProfileId = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    Name = m_ConfigDbContext.UserDefaults.Profile.Name,
+                    Xp = m_ConfigDbContext.UserDefaults.Profile.Xp,
+                    CreateDate = DateTime.UtcNow,
+                    LastSeenDate = DateTime.UtcNow
+                };
+
+                // Users default wallet
+                var dbUserWallet = new DbUserWallet
+                {
+                    UsersWalletId = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    HappyTokens = m_ConfigDbContext.UserDefaults.Wallet.HappyTokens,
+                    Gems = m_ConfigDbContext.UserDefaults.Wallet.Gems,
+                    Gold = m_ConfigDbContext.UserDefaults.Wallet.Gold,
+                };
+
+                // User default happiness
+                var dbUserHappiness = new DbUserHappiness
+                {
+                    UsersHappinessId = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    Wealth = m_ConfigDbContext.UserDefaults.Happiness.Wealth,
+                    Experience = m_ConfigDbContext.UserDefaults.Happiness.Experience,
+                    Health = m_ConfigDbContext.UserDefaults.Happiness.Health,
+                    Skill = m_ConfigDbContext.UserDefaults.Happiness.Skill,
+                    Social = m_ConfigDbContext.UserDefaults.Happiness.Social
+                };
+
+                // Create default avatars (Avatars give happiness, allocate based on Level1)
+                var dbUsersAvatars = new List<DbUserAvatar>();
+                foreach (var avatarType in m_ConfigDbContext.UserDefaults.AvatarTypes)
+                {
+                    var userAvatar = new DbUserAvatar()
+                    {
+                        UsersAvatarId = Guid.NewGuid().ToString(),
+                        UserId = userId,
+                        AvatarType = avatarType,
+                        Level = 1,
+                        Pieces = 0
+                    };
+
+                    // Grab the default avatar config
+                    var avatar = m_ConfigDbContext.Avatars.Avatars.Find(i => i.AvatarType == avatarType);
+
+                    // Add the happiness gained from Level1 to the users Happiness
+                    var happinessType = avatar.HappinessType;
+                    var happinessAmount = avatar.Levels[0].Happiness;
+                    dbUserHappiness.Add(happinessType, happinessAmount);
+
+                    dbUsersAvatars.Add(userAvatar);
+                }
+
+                // Create default buildings (Buildings give happiness, allocate based on Level1)
+                var dbUsersBuildings = new List<DbUserBuilding>();
+                foreach (var buildingType in m_ConfigDbContext.UserDefaults.BuildingTypes)
+                {
+                    var userBuilding = new DbUserBuilding()
+                    {
+                        UsersBuildingId = Guid.NewGuid().ToString(),
+                        UserId = userId,
+                        BuildingType = buildingType,
+                        Level = 1
+                    };
+
+                    // Grab the default avatar config
+                    var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);
+
+                    // Add the happiness gained from Level1 to the users Happiness
+                    var happinessType = building.HappinessType;
+                    var happinessAmount = building.Levels[0].Happiness;
+                    dbUserHappiness.Add(happinessType, happinessAmount);
+
+                    dbUsersBuildings.Add(userBuilding);
+                }
+
+                // Add the new user
                 await m_CoreDbContext.Users.AddAsync(dbUser);
+                await m_CoreDbContext.UsersProfiles.AddAsync(dbUserProfile);
+                await m_CoreDbContext.UsersWallets.AddAsync(dbUserWallet);
+                await m_CoreDbContext.UsersHappiness.AddAsync(dbUserHappiness);
+                await m_CoreDbContext.UsersAvatars.AddRangeAsync(dbUsersAvatars);
+                await m_CoreDbContext.UsersBuildings.AddRangeAsync(dbUsersBuildings);
 
                 // Save changes
                 await m_CoreDbContext.SaveChangesAsync();
@@ -52,8 +146,8 @@ namespace HappyTokenApi.Controllers
                 // Create the user to send back to the client
                 var response = new UserAuthPair()
                 {
-                    UserId = dbUser.UserId,
-                    AuthToken = dbUser.AuthToken
+                    UserId = userId,
+                    AuthToken = authToken
                 };
 
                 return Ok(response);
@@ -67,59 +161,58 @@ namespace HappyTokenApi.Controllers
         [HttpGet("{userId}", Name = nameof(GetUserById))]
         public async Task<IActionResult> GetUserById(string userId)
         {
-            if(!IsCallerUserId(userId))
+            if (!IsCallerUserId(userId))
             {
                 return Forbid();
             }
 
             var dbUser = await m_CoreDbContext.Users
-                .Where(dbu => dbu.UserId == userId)
+                .Where(i => i.UserId == userId)
                 .SingleOrDefaultAsync();
 
-            if (dbUser == null)
+            if (dbUser != null)
             {
-                return NotFound();
+                var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                    .Where(i => i.UserId == userId)
+                    .SingleOrDefaultAsync();
+
+                var dbUserWallet = await m_CoreDbContext.UsersWallets
+                    .Where(i => i.UserId == userId)
+                    .SingleOrDefaultAsync();
+
+                var dbUserHappiness = await m_CoreDbContext.UsersHappiness
+                    .Where(i => i.UserId == userId)
+                    .SingleOrDefaultAsync();
+
+                var dbUserAvatars = await m_CoreDbContext.UsersAvatars
+                    .Where(i => i.UserId == userId)
+                    .ToListAsync();
+
+                var dbUserBuildings = await m_CoreDbContext.UsersBuildings
+                    .Where(i => i.UserId == userId)
+                    .ToListAsync();
+
+                var dbUserCakes = await m_CoreDbContext.UsersCakes
+                    .Where(i => i.UserId == userId)
+                    .ToListAsync();
+
+                var userLogin = new UserLogin
+                {
+                    UserId = userId,
+                    Profile = dbUserProfile,
+                    Wallet = dbUserWallet,
+                    Happiness = dbUserHappiness,
+                    UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList(),
+                    UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList(),
+                    UserCakes = dbUserCakes.OfType<UserCake>().ToList()
+                };
+
+                return Ok(userLogin);
             }
 
-            //var response = new User()
-            //{
-            //    Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
-            //    Method = "GET",
-            //    UserId = dbUser.UserId,
-            //    Email = dbUser.Email,
-            //    Password = dbUser.Password,
-            //    DeviceId = dbUser.DeviceId,
-            //    SessionToken = dbUser.SessionToken
-            //};
-
-            return Ok("dawg");
+            // Could not find the user
+            return NotFound();
         }
-
-        //[HttpGet(Name = nameof(GetAllUsers))]
-        //public async Task<IActionResult> GetAllUsers()
-        //{
-        //    var users = (await m_CoreDbContext.Users.ToArrayAsync())
-        //        .Select(dbUser => new User
-        //        {
-        //            Href = Url.Link(nameof(GetUserById), new { id = dbUser.UserId }),
-        //            Method = "GET",
-        //            UserId = dbUser.UserId,
-        //            Email = dbUser.Email,
-        //            Password = dbUser.Password,
-        //            DeviceId = dbUser.DeviceId,
-        //            SessionToken = dbUser.SessionToken
-        //        })
-        //        .ToArray();
-
-        //    var response = new Collection<User>
-        //    {
-        //        Href = Url.Link(nameof(GetAllUsers), null),
-        //        Relations = new[] { "collection" },
-        //        Value = users
-        //    };
-
-        //    return Ok(response);
-        //}
 
         /// <summary>
         /// Used to ensure the user requested in the method matches the user in the JWT Claim.
@@ -128,7 +221,7 @@ namespace HappyTokenApi.Controllers
         private bool IsCallerUserId(string userId)
         {
             // Ensure we have both the user and Claims data
-            if (string.IsNullOrEmpty(userId) || User.Claims.Count() == 0)
+            if (string.IsNullOrEmpty(userId) || !User.Claims.Any())
             {
                 return false;
             }

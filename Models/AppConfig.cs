@@ -12,5 +12,7 @@ namespace HappyTokenApi.Models
         public List<Building> Buildings { get; set; }
 
         public List<Cake> Cakes { get; set; }
+
+        public Store Store { get; set; }
     }
 }

@@ -26,7 +26,8 @@ namespace HappyTokenApi.Controllers
                 AppDefaults = m_ConfigDbContext.AppDefaults,
                 Avatars = m_ConfigDbContext.Avatars.Avatars,
                 Buildings = m_ConfigDbContext.Buildings.Buildings,
-                Cakes = m_ConfigDbContext.Cakes.Cakes
+                Cakes = m_ConfigDbContext.Cakes.Cakes,
+                Store = m_ConfigDbContext.Store
             };
 
             return Ok(appConfig);

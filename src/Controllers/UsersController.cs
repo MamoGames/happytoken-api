@@ -161,7 +161,12 @@ namespace HappyTokenApi.Controllers
         [HttpGet("{userId}", Name = nameof(GetUserById))]
         public async Task<IActionResult> GetUserById(string userId)
         {
-            if (!IsCallerUserId(userId))
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            if (!this.IsClaimantUserId(userId))
             {
                 return Forbid();
             }
@@ -212,25 +217,6 @@ namespace HappyTokenApi.Controllers
 
             // Could not find the user
             return NotFound();
-        }
-
-        /// <summary>
-        /// Used to ensure the user requested in the method matches the user in the JWT Claim.
-        /// For example; A user can only request their own profile
-        /// </summary>
-        private bool IsCallerUserId(string userId)
-        {
-            // Ensure we have both the user and Claims data
-            if (string.IsNullOrEmpty(userId) || !User.Claims.Any())
-            {
-                return false;
-            }
-
-            // Grab the UserId from the Claim
-            var claimsUserId = User.Claims.First().Value;
-
-            // Ensure the UserId and Claim UserId match
-            return !string.IsNullOrEmpty(claimsUserId) && userId == claimsUserId;
         }
     }
 }

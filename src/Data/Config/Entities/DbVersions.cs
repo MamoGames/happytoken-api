@@ -24,6 +24,6 @@ namespace HappyTokenApi.Data.Config.Entities
 
         public string Quests { get; set; }
 
-        public string Shop { get; set; }
+        public string Store { get; set; }
     }
 }

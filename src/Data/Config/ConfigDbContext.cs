@@ -1,11 +1,7 @@
-﻿using System;
-using ArangoDB.Client;
+﻿using ArangoDB.Client;
 using HappyTokenApi.Data.Config.Entities;
 using HappyTokenApi.Models;
 using System.Net;
-using System.Threading.Tasks;
-using HappyTokenApi.Data.Core.Entities;
-using Microsoft.AspNetCore.Http;
 
 namespace HappyTokenApi.Data.Config
 {
@@ -24,6 +20,8 @@ namespace HappyTokenApi.Data.Config
         public DbAvatars Avatars { get; private set; }
 
         public DbBuildings Buildings { get; private set; }
+
+        public DbStore Store { get; private set; }
 
         /// <summary>
         /// Specifies the version number used to derive all other config data versions.
@@ -78,6 +76,8 @@ namespace HappyTokenApi.Data.Config
                 Avatars = db.Document<DbAvatars>(Versions.Avatars);
 
                 Buildings = db.Document<DbBuildings>(Versions.Buildings);
+
+                Store = db.Document<DbStore>(Versions.Store);
             }
 
             return this;

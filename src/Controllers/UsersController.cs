@@ -1,4 +1,5 @@
-﻿using HappyTokenApi.Data.Core;
+﻿using HappyTokenApi.Data.Config;
+using HappyTokenApi.Data.Core;
 using HappyTokenApi.Data.Core.Entities;
 using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HappyTokenApi.Data.Config;
 
 namespace HappyTokenApi.Controllers
 {

@@ -61,8 +61,6 @@ namespace HappyTokenApi
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-
-
             ConfigureAuth(app);
 
             app.UseMvc();

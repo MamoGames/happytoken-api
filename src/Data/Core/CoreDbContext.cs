@@ -20,20 +20,5 @@ namespace HappyTokenApi.Data.Core
         public DbSet<DbUserCakes> UsersCakes { get; set; }
 
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            //modelBuilder.Entity<Blog>(entity =>
-            //{
-            //    entity.Property(e => e.Url).IsRequired();
-            //});
-
-            //modelBuilder.Entity<Post>(entity =>
-            //{
-            //    entity.HasOne(d => d.Blog)
-            //        .WithMany(p => p.Post)
-            //        .HasForeignKey(d => d.BlogId);
-            //});
-        }
     }
 }

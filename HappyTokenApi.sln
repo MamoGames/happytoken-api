@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTokenApi", "src\HappyTokenApi.csproj", "{E02B798A-A71C-4CCB-A54D-4B43D0B50B59}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTokenApi.Tests", "Tests\HappyTokenApi.Tests.csproj", "{6AF12656-3BB9-4B73-B1D1-D80B22810442}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HappyTokenApi.Models", "Models\HappyTokenApi.Models.csproj", "{94150E9C-E2AE-4E58-9EEE-DF383B9C77CF}"
 EndProject
@@ -19,10 +17,6 @@ Global
 		{E02B798A-A71C-4CCB-A54D-4B43D0B50B59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E02B798A-A71C-4CCB-A54D-4B43D0B50B59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E02B798A-A71C-4CCB-A54D-4B43D0B50B59}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6AF12656-3BB9-4B73-B1D1-D80B22810442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6AF12656-3BB9-4B73-B1D1-D80B22810442}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6AF12656-3BB9-4B73-B1D1-D80B22810442}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6AF12656-3BB9-4B73-B1D1-D80B22810442}.Release|Any CPU.Build.0 = Release|Any CPU
 		{94150E9C-E2AE-4E58-9EEE-DF383B9C77CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94150E9C-E2AE-4E58-9EEE-DF383B9C77CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94150E9C-E2AE-4E58-9EEE-DF383B9C77CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -30,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F284B305-937E-41A0-9293-5CBCADF5CE58}
 	EndGlobalSection
 EndGlobal

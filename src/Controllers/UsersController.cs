@@ -144,7 +144,7 @@ namespace HappyTokenApi.Controllers
                 await m_CoreDbContext.SaveChangesAsync();
 
                 // Create the user to send back to the client
-                var response = new UserAuthPair()
+                var response = new UserAuthPair
                 {
                     UserId = userId,
                     AuthToken = authToken

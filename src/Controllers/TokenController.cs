@@ -3,7 +3,6 @@ using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -27,9 +26,9 @@ namespace HappyTokenApi.Controllers
             m_CoreDbContext = coreDbContext;
         }
 
-        [HttpPost("")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] UserAuthPair userAuthPair)
+        [HttpPost("", Name = nameof(GetSessionJwt))]
+        public async Task<IActionResult> GetSessionJwt([FromBody] UserAuthPair userAuthPair)
         {
             // Is the UserAuthPair data valid?
             if (string.IsNullOrEmpty(userAuthPair?.UserId) || string.IsNullOrEmpty(userAuthPair.AuthToken))

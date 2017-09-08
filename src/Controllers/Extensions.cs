@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace HappyTokenApi.Controllers
 {
-    public static class Extentsions
+    public static class Extensions
     {
         /// <summary>
         /// Used to ensure the user requested in the method matches the user in the JWT Claim.

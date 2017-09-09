@@ -2,7 +2,7 @@
 using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using System;
 
 namespace HappyTokenApi.Controllers
 {
@@ -18,11 +18,12 @@ namespace HappyTokenApi.Controllers
 
         [Authorize]
         [HttpGet(Name = nameof(GetClientConfig))]
-        public async Task<IActionResult> GetClientConfig()
+        public IActionResult GetClientConfig()
         {
             // Grab relevant config data for client app config
             var appConfig = new AppConfig
             {
+                ServerDateTime = DateTime.UtcNow,
                 AppDefaults = m_ConfigDbContext.AppDefaults,
                 Avatars = m_ConfigDbContext.Avatars.Avatars,
                 Buildings = m_ConfigDbContext.Buildings.Buildings,

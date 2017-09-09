@@ -8,21 +8,21 @@ namespace HappyTokenApi.Data.Config
 {
     public class ConfigDbContext
     {
-        public DbVersions Versions { get; private set; }
+        public DbVersions Versions { get; }
 
-        public DbAppDefaults AppDefaults { get; private set; }
+        public DbAppDefaults AppDefaults { get; }
 
-        public DbUserDefaults UserDefaults { get; private set; }
+        public DbUserDefaults UserDefaults { get; }
 
-        public DbCakes Cakes { get; private set; }
+        public DbCakes Cakes { get; }
 
-        public DbAvatars Avatars { get; private set; }
+        public DbAvatars Avatars { get; }
 
-        public DbBuildings Buildings { get; private set; }
+        public DbBuildings Buildings { get; }
 
-        public DbStore Store { get; private set; }
+        public DbStore Store { get; }
 
-        public DbPromotions Promotions { get; private set; }
+        public DbPromotions Promotions { get; }
 
         public ConfigDbContext(IOptions<ConfigDbSettings> options)
         {

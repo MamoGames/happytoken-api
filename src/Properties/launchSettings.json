@@ -1,7 +1,11 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/HappyTokenApi",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:50456/",
       "sslPort": 0
@@ -10,15 +14,14 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
       "launchUrl": "ping",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "http://localhost:50456/"
     },
     "HappyTokenApi": {
-      "commandName": "Project",
-      "launchBrowser": false,
+      "commandName": "IISExpress",
       "launchUrl": "ping",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

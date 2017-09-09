@@ -22,6 +22,8 @@ namespace HappyTokenApi.Data.Config
 
         public DbStore Store { get; private set; }
 
+        public DbPromotions Promotions { get; private set; }
+
         public ConfigDbContext(IOptions<ConfigDbSettings> options)
         {
             var configDbSettings = options.Value;
@@ -49,6 +51,8 @@ namespace HappyTokenApi.Data.Config
                 Buildings = db.Document<DbBuildings>(Versions.Buildings);
 
                 Store = db.Document<DbStore>(Versions.Store);
+
+                Promotions = db.Document<DbPromotions>(Versions.Promotions);
             }
         }
     }

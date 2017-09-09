@@ -11,7 +11,5 @@
         public int HappyTokens { get; set; }
 
         public bool IsVisible { get; set; }
-
-        public bool IsPromoted { get; set; }
     }
 }

@@ -7,7 +7,5 @@
         public int Gold { get; set; }
 
         public bool IsVisible { get; set; }
-
-        public bool IsPromoted { get; set; }
     }
 }

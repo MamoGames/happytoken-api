@@ -15,8 +15,6 @@ namespace HappyTokenApi.Models
 
         public List<Cake> Cakes { get; set; }
 
-        public List<Promotion> Promotions { get; set; }
-
         public Store Store { get; set; }
     }
 }

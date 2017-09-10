@@ -4,6 +4,8 @@ namespace HappyTokenApi.Models
 {
     public class Store
     {
+        public List<Promotion> Promotions { get; set; }
+
         public List<StoreCurrencySpot> CurrencySpots { get; set; }
 
         public List<StoreAvatar> Avatars { get; set; }

@@ -212,11 +212,36 @@ namespace HappyTokenApi.Controllers
                     UserCakes = dbUserCakes.OfType<UserCake>().ToList()
                 };
 
+                // Make updates due to login
+                UseResourceMines(dbUserProfile, dbUserWallet);
+
+                dbUserProfile.LastSeenDate = DateTime.UtcNow;
+                await m_CoreDbContext.SaveChangesAsync();
+
                 return Ok(userLogin);
             }
 
-            // Could not find the user
-            return NotFound();
+            return NotFound("Could not find user.");
+        }
+
+        private void UseResourceMines(Profile profile, Wallet wallet)
+        {
+            var hoursSinceLastLogin = DateTime.UtcNow - profile.LastSeenDate;
+
+            if (hoursSinceLastLogin.TotalHours >= 24)
+            {
+                if (profile.GoldMineDaysRemaining > 0)
+                {
+                    profile.GoldMineDaysRemaining--;
+                    wallet.Gold += 10;
+                }
+
+                if (profile.GemMineDaysRemaining > 0)
+                {
+                    profile.GemMineDaysRemaining--;
+                    wallet.Gems += 3;
+                }
+            }
         }
     }
 }

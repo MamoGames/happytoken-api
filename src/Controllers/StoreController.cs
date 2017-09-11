@@ -26,6 +26,83 @@ namespace HappyTokenApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("resourcemines", Name = nameof(BuyResourceMine))]
+        public async Task<IActionResult> BuyResourceMine([FromBody] ResourceMineType resourceMineType)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            var resourceMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == resourceMineType);
+    
+            if (resourceMine == null)
+            {
+                return BadRequest("Requested Resource Mine is invalid.");
+            }
+
+            // Check User has the currency required
+            var dbUserWallet = await m_CoreDbContext.UsersWallets
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserWallet == null)
+            {
+                return BadRequest("Could not find Users Wallet.");
+            }
+
+            // Check user has enough to buy Resource Mine
+            var isSellSuccessful = false;
+            switch (resourceMine.ResourceMineType)
+            {
+                case ResourceMineType.Gold:
+                    if (dbUserWallet.Gold >= resourceMine.Price)
+                    {
+                        isSellSuccessful = true;
+                        dbUserWallet.Gold -= resourceMine.Price;
+                    }
+                    break;
+                case ResourceMineType.Gems:
+                    if (dbUserWallet.Gold >= resourceMine.Price)
+                    {
+                        isSellSuccessful = true;
+                        dbUserWallet.Gold -= resourceMine.Price;
+                    }
+                    break;
+            }
+
+            if (!isSellSuccessful)
+            {
+                return BadRequest("User does not have enough gold to buy this Resource Mine.");
+            }
+
+            // Check User has the currency required
+            var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            // Settle the buy part of the transaction
+            switch (resourceMine.ResourceMineType)
+            {
+                case ResourceMineType.Gold:
+                    dbUserProfile.GoldMineDaysRemaining += resourceMine.Days;
+                    break;
+                case ResourceMineType.Gems:
+                    dbUserProfile.GemMineDaysRemaining += resourceMine.Days;
+                    break;
+            }
+
+            await m_CoreDbContext.SaveChangesAsync();
+
+            // Send the updated Wallet back to the user
+            var wallet = (Wallet)dbUserWallet;
+
+            return Ok(wallet);
+        }
+
+        [Authorize]
         [HttpPost("currencyspots", Name = nameof(BuyCurrencySpot))]
         public async Task<IActionResult> BuyCurrencySpot([FromBody] StoreCurrencySpot storeCurrencySpot)
         {
@@ -47,7 +124,6 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Requested StoreCurrencySpot is invalid.");
             }
 
-            // Check User has the currency required
             var dbUserWallet = await m_CoreDbContext.UsersWallets
                 .Where(i => i.UserId == userId)
                 .SingleOrDefaultAsync();

@@ -232,14 +232,16 @@ namespace HappyTokenApi.Controllers
             {
                 if (profile.GoldMineDaysRemaining > 0)
                 {
+                    var goldMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == ResourceMineType.Gold);
                     profile.GoldMineDaysRemaining--;
-                    wallet.Gold += 10;
+                    wallet.Gold += goldMine.AmountPerDay;
                 }
 
                 if (profile.GemMineDaysRemaining > 0)
                 {
+                    var gemMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == ResourceMineType.Gems);
                     profile.GemMineDaysRemaining--;
-                    wallet.Gems += 3;
+                    wallet.Gems += gemMine.AmountPerDay;
                 }
             }
         }

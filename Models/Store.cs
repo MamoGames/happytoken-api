@@ -4,7 +4,7 @@ namespace HappyTokenApi.Models
 {
     public class Store
     {
-        public List<Promotion> Promotions { get; set; }
+        public List<StorePromotion> Promotions { get; set; }
 
         public List<ResourceMine> ResourceMines { get; set; }
 

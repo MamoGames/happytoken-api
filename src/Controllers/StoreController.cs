@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 
 namespace HappyTokenApi.Controllers
 {
@@ -26,6 +27,81 @@ namespace HappyTokenApi.Controllers
         }
 
         [Authorize]
+        [HttpPost("promotions", Name = nameof(BuyPromotion))]
+        public async Task<IActionResult> BuyPromotion([FromBody] string promotionCode)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            var promotion = m_ConfigDbContext.Store.Promotions.Find(i => i.Code == promotionCode);
+
+            if (promotion == null)
+            {
+                return BadRequest("Requested Promotion code is invalid.");
+            }
+
+            // Check User has the currency required
+            var dbUserWallet = await m_CoreDbContext.UsersWallets
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserWallet == null)
+            {
+                return BadRequest("Could not find Users Wallet.");
+            }
+
+            // Check user has enough to buy Promotion
+            var isBuySuccessful = false;
+            if (dbUserWallet.Gold >= promotion.Price)
+            {
+                isBuySuccessful = true;
+                dbUserWallet.Gold -= promotion.Price;
+            }
+
+            if (!isBuySuccessful)
+            {
+                return BadRequest("User does not have enough gold to buy this Promotion.");
+            }
+
+            // Allocate resources
+            dbUserWallet.HappyTokens += promotion.HappyTokens;
+            dbUserWallet.Gold += promotion.Gold;
+            dbUserWallet.Gems += promotion.Gems;
+
+            // Allocate Avatar Pieces
+            if (promotion.AvatarPieces.Count > 0)
+            {
+                var dbUserAvatars = await m_CoreDbContext.UsersAvatars
+                    .Where(i => i.UserId == userId)
+                    .ToListAsync();
+
+                if (dbUserAvatars != null)
+                {
+                    foreach (var avatarPiece in promotion.AvatarPieces)
+                    {
+                        var avatar = dbUserAvatars.Find(i => i.AvatarType == avatarPiece.AvatarType);
+
+                        if (avatar != null)
+                        {
+                            avatar.Pieces += avatarPiece.Pieces;
+                        }
+                    }
+                }
+            }
+
+            await m_CoreDbContext.SaveChangesAsync();
+
+            // Send the updated Wallet back to the user
+            var wallet = (Wallet)dbUserWallet;
+
+            return Ok(wallet);
+        }
+
+        [Authorize]
         [HttpPost("resourcemines", Name = nameof(BuyResourceMine))]
         public async Task<IActionResult> BuyResourceMine([FromBody] ResourceMineType resourceMineType)
         {
@@ -37,7 +113,7 @@ namespace HappyTokenApi.Controllers
             }
 
             var resourceMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == resourceMineType);
-    
+
             if (resourceMine == null)
             {
                 return BadRequest("Requested Resource Mine is invalid.");

@@ -12,6 +12,8 @@ namespace HappyTokenApi.Models
 
         public DateTime LastSeenDate { get; set; }
 
+        public DateTime LastDailyRewardDate { get; set; }
+
         public int GoldMineDaysRemaining { get; set; }
 
         public int GemMineDaysRemaining { get; set; }

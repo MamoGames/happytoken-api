@@ -33,128 +33,129 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("DeviceId was invalid.");
             }
 
+            // NOTE: We may want to enable this again later
             // Check if DeviceId exists
-            var dbUser = await m_CoreDbContext.Users
-                .Where(dbu => dbu.DeviceId == userDevice.DeviceId)
-                .SingleOrDefaultAsync();
+            //var dbUser = await m_CoreDbContext.Users
+            //    .Where(dbu => dbu.DeviceId == userDevice.DeviceId)
+            //    .SingleOrDefaultAsync();
 
             // If it does not exist, create a new user
-            if (dbUser == null)
+            //if (dbUser == null)
+            //{
+            var userId = Guid.NewGuid().ToString();
+            var authToken = Guid.NewGuid().ToString();
+
+            // User data
+            var dbUser = new DbUser
             {
-                var userId = Guid.NewGuid().ToString();
-                var authToken = Guid.NewGuid().ToString();
+                UserId = userId,
+                DeviceId = userDevice.DeviceId,
+                AuthToken = authToken
+            };
 
-                // User data
-                dbUser = new DbUser
+            // Users default profile
+            var dbUserProfile = new DbUserProfile
+            {
+                UsersProfileId = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Name = m_ConfigDbContext.UserDefaults.Profile.Name,
+                Xp = m_ConfigDbContext.UserDefaults.Profile.Xp,
+                CreateDate = DateTime.UtcNow,
+                LastSeenDate = DateTime.UtcNow
+            };
+
+            // Users default wallet
+            var dbUserWallet = new DbUserWallet
+            {
+                UsersWalletId = Guid.NewGuid().ToString(),
+                UserId = userId,
+                HappyTokens = m_ConfigDbContext.UserDefaults.Wallet.HappyTokens,
+                Gems = m_ConfigDbContext.UserDefaults.Wallet.Gems,
+                Gold = m_ConfigDbContext.UserDefaults.Wallet.Gold,
+            };
+
+            // User default happiness
+            var dbUserHappiness = new DbUserHappiness
+            {
+                UsersHappinessId = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Wealth = m_ConfigDbContext.UserDefaults.Happiness.Wealth,
+                Experience = m_ConfigDbContext.UserDefaults.Happiness.Experience,
+                Health = m_ConfigDbContext.UserDefaults.Happiness.Health,
+                Skill = m_ConfigDbContext.UserDefaults.Happiness.Skill,
+                Social = m_ConfigDbContext.UserDefaults.Happiness.Social
+            };
+
+            // Create default avatars (Avatars give happiness, allocate based on Level1)
+            var dbUsersAvatars = new List<DbUserAvatar>();
+            foreach (var avatarType in m_ConfigDbContext.UserDefaults.AvatarTypes)
+            {
+                var userAvatar = new DbUserAvatar()
                 {
+                    UsersAvatarId = Guid.NewGuid().ToString(),
                     UserId = userId,
-                    DeviceId = userDevice.DeviceId,
-                    AuthToken = authToken
+                    AvatarType = avatarType,
+                    Level = 1,
+                    Pieces = 0
                 };
 
-                // Users default profile
-                var dbUserProfile = new DbUserProfile
-                {
-                    UsersProfileId = Guid.NewGuid().ToString(),
-                    UserId = userId,
-                    Name = m_ConfigDbContext.UserDefaults.Profile.Name,
-                    Xp = m_ConfigDbContext.UserDefaults.Profile.Xp,
-                    CreateDate = DateTime.UtcNow,
-                    LastSeenDate = DateTime.UtcNow
-                };
+                // Grab the default avatar config
+                var avatar = m_ConfigDbContext.Avatars.Avatars.Find(i => i.AvatarType == avatarType);
 
-                // Users default wallet
-                var dbUserWallet = new DbUserWallet
-                {
-                    UsersWalletId = Guid.NewGuid().ToString(),
-                    UserId = userId,
-                    HappyTokens = m_ConfigDbContext.UserDefaults.Wallet.HappyTokens,
-                    Gems = m_ConfigDbContext.UserDefaults.Wallet.Gems,
-                    Gold = m_ConfigDbContext.UserDefaults.Wallet.Gold,
-                };
+                // Add the happiness gained from Level1 to the users Happiness
+                var happinessType = avatar.HappinessType;
+                var happinessAmount = avatar.Levels[0].Happiness;
+                dbUserHappiness.Add(happinessType, happinessAmount);
 
-                // User default happiness
-                var dbUserHappiness = new DbUserHappiness
-                {
-                    UsersHappinessId = Guid.NewGuid().ToString(),
-                    UserId = userId,
-                    Wealth = m_ConfigDbContext.UserDefaults.Happiness.Wealth,
-                    Experience = m_ConfigDbContext.UserDefaults.Happiness.Experience,
-                    Health = m_ConfigDbContext.UserDefaults.Happiness.Health,
-                    Skill = m_ConfigDbContext.UserDefaults.Happiness.Skill,
-                    Social = m_ConfigDbContext.UserDefaults.Happiness.Social
-                };
-
-                // Create default avatars (Avatars give happiness, allocate based on Level1)
-                var dbUsersAvatars = new List<DbUserAvatar>();
-                foreach (var avatarType in m_ConfigDbContext.UserDefaults.AvatarTypes)
-                {
-                    var userAvatar = new DbUserAvatar()
-                    {
-                        UsersAvatarId = Guid.NewGuid().ToString(),
-                        UserId = userId,
-                        AvatarType = avatarType,
-                        Level = 1,
-                        Pieces = 0
-                    };
-
-                    // Grab the default avatar config
-                    var avatar = m_ConfigDbContext.Avatars.Avatars.Find(i => i.AvatarType == avatarType);
-
-                    // Add the happiness gained from Level1 to the users Happiness
-                    var happinessType = avatar.HappinessType;
-                    var happinessAmount = avatar.Levels[0].Happiness;
-                    dbUserHappiness.Add(happinessType, happinessAmount);
-
-                    dbUsersAvatars.Add(userAvatar);
-                }
-
-                // Create default buildings (Buildings give happiness, allocate based on Level1)
-                var dbUsersBuildings = new List<DbUserBuilding>();
-                foreach (var buildingType in m_ConfigDbContext.UserDefaults.BuildingTypes)
-                {
-                    var userBuilding = new DbUserBuilding()
-                    {
-                        UsersBuildingId = Guid.NewGuid().ToString(),
-                        UserId = userId,
-                        BuildingType = buildingType,
-                        Level = 1
-                    };
-
-                    // Grab the default avatar config
-                    var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);
-
-                    // Add the happiness gained from Level1 to the users Happiness
-                    var happinessType = building.HappinessType;
-                    var happinessAmount = building.Levels[0].Happiness;
-                    dbUserHappiness.Add(happinessType, happinessAmount);
-
-                    dbUsersBuildings.Add(userBuilding);
-                }
-
-                // Add the new user
-                await m_CoreDbContext.Users.AddAsync(dbUser);
-                await m_CoreDbContext.UsersProfiles.AddAsync(dbUserProfile);
-                await m_CoreDbContext.UsersWallets.AddAsync(dbUserWallet);
-                await m_CoreDbContext.UsersHappiness.AddAsync(dbUserHappiness);
-                await m_CoreDbContext.UsersAvatars.AddRangeAsync(dbUsersAvatars);
-                await m_CoreDbContext.UsersBuildings.AddRangeAsync(dbUsersBuildings);
-
-                // Save changes
-                await m_CoreDbContext.SaveChangesAsync();
-
-                // Create the user to send back to the client
-                var response = new UserAuthPair
-                {
-                    UserId = userId,
-                    AuthToken = authToken
-                };
-
-                return Ok(response);
+                dbUsersAvatars.Add(userAvatar);
             }
 
+            // Create default buildings (Buildings give happiness, allocate based on Level1)
+            var dbUsersBuildings = new List<DbUserBuilding>();
+            foreach (var buildingType in m_ConfigDbContext.UserDefaults.BuildingTypes)
+            {
+                var userBuilding = new DbUserBuilding()
+                {
+                    UsersBuildingId = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    BuildingType = buildingType,
+                    Level = 1
+                };
+
+                // Grab the default avatar config
+                var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);
+
+                // Add the happiness gained from Level1 to the users Happiness
+                var happinessType = building.HappinessType;
+                var happinessAmount = building.Levels[0].Happiness;
+                dbUserHappiness.Add(happinessType, happinessAmount);
+
+                dbUsersBuildings.Add(userBuilding);
+            }
+
+            // Add the new user
+            await m_CoreDbContext.Users.AddAsync(dbUser);
+            await m_CoreDbContext.UsersProfiles.AddAsync(dbUserProfile);
+            await m_CoreDbContext.UsersWallets.AddAsync(dbUserWallet);
+            await m_CoreDbContext.UsersHappiness.AddAsync(dbUserHappiness);
+            await m_CoreDbContext.UsersAvatars.AddRangeAsync(dbUsersAvatars);
+            await m_CoreDbContext.UsersBuildings.AddRangeAsync(dbUsersBuildings);
+
+            // Save changes
+            await m_CoreDbContext.SaveChangesAsync();
+
+            // Create the user to send back to the client
+            var response = new UserAuthPair
+            {
+                UserId = userId,
+                AuthToken = authToken
+            };
+
+            return Ok(response);
+            // }
+
             // User with this DeviceId already exists
-            return Forbid();
+            // return Forbid();
         }
 
         [Authorize]
@@ -201,6 +202,9 @@ namespace HappyTokenApi.Controllers
                     .Where(i => i.UserId == userId)
                     .ToListAsync();
 
+                // Check if we give the players their daily reward
+                var dailyRewards = ProcessDailyReward(dbUserProfile, dbUserWallet);
+
                 var userLogin = new UserLogin
                 {
                     UserId = userId,
@@ -209,13 +213,12 @@ namespace HappyTokenApi.Controllers
                     Happiness = dbUserHappiness,
                     UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList(),
                     UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList(),
-                    UserCakes = dbUserCakes.OfType<UserCake>().ToList()
+                    UserCakes = dbUserCakes.OfType<UserCake>().ToList(),
+                    DailyRewards = dailyRewards
                 };
 
-                // Make updates due to login
-                UseResourceMines(dbUserProfile, dbUserWallet);
-
                 dbUserProfile.LastSeenDate = DateTime.UtcNow;
+
                 await m_CoreDbContext.SaveChangesAsync();
 
                 return Ok(userLogin);
@@ -224,26 +227,36 @@ namespace HappyTokenApi.Controllers
             return NotFound("Could not find user.");
         }
 
-        private void UseResourceMines(Profile profile, Wallet wallet)
+        private DailyRewards ProcessDailyReward(Profile profile, Wallet wallet)
         {
-            var hoursSinceLastLogin = DateTime.UtcNow - profile.LastSeenDate;
+            var dailyRewards = new DailyRewards();
 
-            if (hoursSinceLastLogin.TotalHours >= 24)
+            var hoursSinceLastReward = DateTime.UtcNow - profile.LastDailyRewardDate;
+
+            if (hoursSinceLastReward.TotalHours >= 24)
             {
+                profile.LastDailyRewardDate = DateTime.UtcNow;
+
                 if (profile.GoldMineDaysRemaining > 0)
                 {
                     var goldMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == ResourceMineType.Gold);
+
                     profile.GoldMineDaysRemaining--;
                     wallet.Gold += goldMine.AmountPerDay;
+                    dailyRewards.Wallet.Gold = goldMine.AmountPerDay;
                 }
 
                 if (profile.GemMineDaysRemaining > 0)
                 {
                     var gemMine = m_ConfigDbContext.Store.ResourceMines.Find(i => i.ResourceMineType == ResourceMineType.Gems);
+
                     profile.GemMineDaysRemaining--;
                     wallet.Gems += gemMine.AmountPerDay;
+                    dailyRewards.Wallet.Gems = gemMine.AmountPerDay;
                 }
             }
+
+            return dailyRewards;
         }
     }
 }

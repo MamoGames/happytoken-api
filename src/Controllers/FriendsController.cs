@@ -196,9 +196,7 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             // Grab the entire (updated) list of friends, and return to the user
-            var friends = await GetFriends();
-
-            return Ok(friends);
+            return await GetFriends();
         }
     }
 }

@@ -61,7 +61,12 @@ namespace HappyTokenApi.Controllers
                 Name = m_ConfigDbContext.UserDefaults.Profile.Name,
                 Xp = m_ConfigDbContext.UserDefaults.Profile.Xp,
                 CreateDate = DateTime.UtcNow,
-                LastSeenDate = DateTime.UtcNow
+                LastSeenDate = DateTime.UtcNow,
+                LastDailyRewardDate = DateTime.UtcNow,
+                GoldMineDaysRemaining = 0,
+                GemMineDaysRemaining = 0, 
+                Level = 0,
+                FriendCount = 0,
             };
 
             // Users default wallet

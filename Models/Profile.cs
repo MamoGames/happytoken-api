@@ -8,6 +8,8 @@ namespace HappyTokenApi.Models
 
         public int Xp { get; set; }
 
+        public int Level { get; set; }
+
         public DateTime CreateDate { get; set; }
 
         public DateTime LastSeenDate { get; set; }
@@ -17,5 +19,7 @@ namespace HappyTokenApi.Models
         public int GoldMineDaysRemaining { get; set; }
 
         public int GemMineDaysRemaining { get; set; }
+
+        public int FriendCount { get; set; }
     }
 }

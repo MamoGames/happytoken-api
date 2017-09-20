@@ -9,6 +9,8 @@ namespace HappyTokenApi.Data.Core
 
         public DbSet<DbUserProfile> UsersProfiles { get; set; }
 
+        public DbSet<DbUserFriend> UsersFriends { get; set; }
+
         public DbSet<DbUserWallet> UsersWallets { get; set; }
 
         public DbSet<DbUserHappiness> UsersHappiness { get; set; }

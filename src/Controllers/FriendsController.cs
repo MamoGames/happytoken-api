@@ -34,6 +34,7 @@ namespace HappyTokenApi.Controllers
 
             var dbUserProfiles = await m_CoreDbContext.UsersProfiles
                 .Where(i => i.LastSeenDate > fromDate)
+                .Where(i => i.UserId != userId)
                 .Take(20)
                 .ToListAsync();
 
@@ -155,6 +156,11 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User has too many friends.");
             }
 
+            if (userId == friendUserId) 
+            {
+                return BadRequest("Cannot add self as friend.");
+            }
+
             var dbUserFriends = await m_CoreDbContext.UsersFriends
                 .Where(i => i.UserId == userId)
                 .ToListAsync();
@@ -162,7 +168,7 @@ namespace HappyTokenApi.Controllers
             if (dbUserFriends != null)
             {
                 // Check user is not already friend in either direction
-                if (dbUserFriends.Any(i => i.UsersFriendId == friendUserId))
+                if (dbUserFriends.Any(i => i.FriendUserId == friendUserId))
                 {
                     return BadRequest("User is already friends.");
                 }

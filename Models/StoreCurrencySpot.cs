@@ -1,6 +1,6 @@
 ﻿namespace HappyTokenApi.Models
 {
-    public class StoreCurrencySpot
+    public class StoreCurrencySpot : IStoreProduct
     {
         /// <summary>
         /// Users buys this currency

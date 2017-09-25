@@ -1,6 +1,6 @@
 ﻿namespace HappyTokenApi.Models
 {
-    public class StoreAvatar
+    public class StoreAvatar : IStoreProduct
     {
         public AvatarType AvatarType { get; set; }
 

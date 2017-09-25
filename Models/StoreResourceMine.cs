@@ -1,6 +1,6 @@
 ﻿namespace HappyTokenApi.Models
 {
-    public class ResourceMine
+    public class ResourceMine : IStoreProduct
     {
         public string Name { get; set; }
 
@@ -19,5 +19,7 @@
         public string DetailedDescription { get; set; }
 
         public string PrefabId { get; set; }
+
+		public bool IsVisible { get; set; }
     }
 }

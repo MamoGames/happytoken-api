@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
-    public class StorePromotion
+	public class StorePromotion :IStoreProduct
     {
         public string Code { get; set; }
 
@@ -22,6 +22,8 @@ namespace HappyTokenApi.Models
         public string Image { get; set; }
 
         public string PrefabId { get; set; }
+
+		public bool IsVisible { get; set; }
 
         public bool IsHighlighted { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using HappyTokenApi.Models;
 
-namespace HappyTokenApi
+namespace HappyTokenApi.Models
 {
     public class StoreO2OProduct : StoreProduct
     {

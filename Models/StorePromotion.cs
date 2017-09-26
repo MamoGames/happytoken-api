@@ -11,6 +11,8 @@ namespace HappyTokenApi.Models
 
         public string PromotedProductId { get; set; }
 
+        public string PromotionText { get; set; }
+
 		public string Name { get; set; }
 
 		public string Title { get; set; }

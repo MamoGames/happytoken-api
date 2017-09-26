@@ -3,7 +3,7 @@ using HappyTokenApi.Models;
 
 namespace HappyTokenApi
 {
-    public class StoreO2O : StoreProduct
+    public class StoreO2OProduct : StoreProduct
     {
         public string ProductCode { get; set; }
 

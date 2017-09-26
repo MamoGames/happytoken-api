@@ -20,6 +20,6 @@ namespace HappyTokenApi.Models
 
         public List<StoreBuildingUpgrade> BuildingUpgrades { get; set; }
 
-        public List<StoreO2O> O2OProducts { get; set; }
+        public List<StoreO2OProduct> O2OProducts { get; set; }
     }
 }

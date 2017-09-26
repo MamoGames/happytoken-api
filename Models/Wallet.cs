@@ -30,5 +30,10 @@ namespace HappyTokenApi.Models
 
             this.HappyTokens -= cost.HappyTokens;
         }
+
+        public override string ToString()
+        {
+            return (this.Gold > 0 ? "Gold: " + this.Gold : "") + (this.Gems > 0 ? "Gems: " + this.Gems : "") + (this.HappyTokens > 0 ? "HappyTokens: " + this.HappyTokens : "");
+        }
 	}
 }

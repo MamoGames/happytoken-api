@@ -8,7 +8,7 @@ namespace HappyTokenApi.Models
 
         public AvatarPiece AvatarPiece { get; set; }
 
-        public string IAPProductID { get; set; }
+        public string IAPProductId { get; set; }
 
         public string IAPReferencePrice { get; set; }
 
@@ -34,7 +34,7 @@ namespace HappyTokenApi.Models
         {
             get
             {
-                return !string.IsNullOrEmpty(this.IAPProductID) && !string.IsNullOrEmpty(this.IAPReferencePrice);
+                return !string.IsNullOrEmpty(this.IAPProductId) && !string.IsNullOrEmpty(this.IAPReferencePrice);
             }
         }
 
@@ -57,12 +57,9 @@ namespace HappyTokenApi.Models
                 {
                     // IAP should left empty (to prevent careless missing values)
 
-                    if (!string.IsNullOrEmpty(this.IAPProductID) || !string.IsNullOrEmpty(this.IAPReferencePrice)) return false;
+                    if (!string.IsNullOrEmpty(this.IAPProductId) || !string.IsNullOrEmpty(this.IAPReferencePrice)) return false;
 
-                    // wallet should has value in exactly one of the fields, or avatar pieces should be filled in
-                    if ((this.Wallet == null || this.Wallet.IsEmpty) && (this.AvatarPiece == null || this.AvatarPiece.Pieces <= 0)) return false;
-
-                    if (this.AvatarPiece.Pieces < 0) return false;
+                    if (this.AvatarPiece != null && this.AvatarPiece.Pieces < 0) return false;
 
                     if (this.Wallet != null) 
                     {
@@ -70,11 +67,25 @@ namespace HappyTokenApi.Models
 
 						//only at most one of the fields in wallet should be > 0
 						int total = this.Wallet.Gems + this.Wallet.HappyTokens + this.Wallet.Gold;
-						if (total > this.Wallet.Gems && total > this.Wallet.HappyTokens && total > this.Wallet.Gems) return false;
+						if (total > this.Wallet.Gems && total > this.Wallet.HappyTokens && total > this.Wallet.Gold) return false;
                     } 
 
                     return true;
                 }
+            }
+        }
+
+        public bool IsFree
+        {
+            get
+            {
+                if (this.IsIAP) return false;
+
+                if (this.Wallet != null && !this.Wallet.IsEmpty) return false;
+
+                if (this.AvatarPiece != null && this.AvatarPiece.Pieces > 0) return false;
+
+                return true;
             }
         }
 
@@ -146,6 +157,11 @@ namespace HappyTokenApi.Models
             }
 
             return false;
-        } 
+        }
+
+        public override string ToString()
+        {
+            return ((this.Wallet == null || this.Wallet.IsEmpty) ? "" : this.Wallet.ToString()) + ((this.AvatarPiece == null || this.AvatarPiece.Pieces <= 0) ? "" : this.AvatarPiece.AvatarType.ToString() + ":" + this.AvatarPiece.Pieces);
+        }
     }
 }

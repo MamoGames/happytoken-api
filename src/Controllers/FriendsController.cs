@@ -34,7 +34,6 @@ namespace HappyTokenApi.Controllers
 
             var dbUserProfiles = await m_CoreDbContext.UsersProfiles
                 .Where(i => i.LastSeenDate > fromDate)
-                .Where(i => i.UserId != userId)
                 .Take(20)
                 .ToListAsync();
 
@@ -42,6 +41,9 @@ namespace HappyTokenApi.Controllers
 
             foreach (var profile in dbUserProfiles)
             {
+                // exclude self
+                if (profile.UserId == userId) continue;
+
                 var friendInfo = new FriendInfo
                 {
                     UserId = userId,

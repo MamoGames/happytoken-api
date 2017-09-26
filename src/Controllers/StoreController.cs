@@ -29,7 +29,7 @@ namespace HappyTokenApi.Controllers
 
         [Authorize]
         [HttpPost("promotions", Name = nameof(BuyPromotion))]
-        public async Task<IActionResult> BuyPromotion([FromBody] string promotionCode)
+        public async Task<IActionResult> BuyPromotion([FromBody] string promotionId)
         {
             var userId = this.GetClaimantUserId();
 
@@ -38,12 +38,14 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("UserId is invalid.");
             }
 
-            var promotion = m_ConfigDbContext.Store.Promotions.Find(i => i.Code == promotionCode);
+            var promotion = m_ConfigDbContext.Store.Promotions.Find(i => i.PromotionId == promotionId);
 
             if (promotion == null)
             {
                 return BadRequest("Requested Promotion code is invalid.");
             }
+
+            // TODO: validate item
 
             // Check User has the currency required
             var dbUserWallet = await m_CoreDbContext.UsersWallets
@@ -166,7 +168,7 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbStoreCurrencySpot = m_ConfigDbContext.Store.CurrencySpots.Find(
-                i => i.ProductID == storeCurrencySpot.ProductID);
+                i => i.ProductId == storeCurrencySpot.ProductId);
 
             if (dbStoreCurrencySpot == null)
             {

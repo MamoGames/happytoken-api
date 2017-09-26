@@ -2,7 +2,7 @@
 {
     public class StoreProduct
     {
-        public string ProductID { get; set; }
+        public string ProductId { get; set; }
 
         public string Name { get; set; }
 
@@ -35,7 +35,7 @@
         /// <param name="user">User.</param>
         public bool IsVisibleTo(UserLogin user)
         {
-            return this.IsVisible && this.Requirements.IsMet(this.ProductID, user); 
+            return this.IsVisible && this.Requirements.IsMet(this.ProductId, user); 
         }
     }
 }

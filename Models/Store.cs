@@ -4,6 +4,8 @@ namespace HappyTokenApi.Models
 {
     public class Store
     {
+        public bool IsO2OOpen { get; set; }
+
         public List<StorePromotion> Promotions { get; set; }
 
         public List<ResourceMine> ResourceMines { get; set; }
@@ -17,5 +19,7 @@ namespace HappyTokenApi.Models
         public List<StoreBuilding> Buildings { get; set; }
 
         public List<StoreBuildingUpgrade> BuildingUpgrades { get; set; }
+
+        public List<StoreO2O> O2OProducts { get; set; }
     }
 }

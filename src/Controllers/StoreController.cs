@@ -55,43 +55,38 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Could not find Users Wallet.");
             }
 
-            // Check user has enough to buy Promotion
-            var isBuySuccessful = false;
-            if (dbUserWallet.Gold >= promotion.Price)
-            {
-                isBuySuccessful = true;
-                dbUserWallet.Gold -= promotion.Price;
-            }
+            var promotedProduct = promotion.GetPromotedStoreProduct(m_ConfigDbContext.Store);
 
-            if (!isBuySuccessful)
-            {
-                return BadRequest("User does not have enough gold to buy this Promotion.");
-            }
+            if (promotedProduct == null) return BadRequest("Promoted store product not found");
 
-            // Allocate resources
-            dbUserWallet.HappyTokens += promotion.HappyTokens;
-            dbUserWallet.Gold += promotion.Gold;
-            dbUserWallet.Gems += promotion.Gems;
+            if (! promotion.Cost.PurchaseWith(dbUserWallet, null)) return BadRequest("User does not have enough resources to buy this item.");
+
+            //TODO: handle each product type purchase
 
             // Allocate Avatar Pieces
-            if (promotion.AvatarPieces.Count > 0)
+            switch (promotion.StoreProductType)
             {
-                var dbUserAvatars = await m_CoreDbContext.UsersAvatars
-                    .Where(i => i.UserId == userId)
-                    .ToListAsync();
+				case StoreProductType.Avatar:
 
-                if (dbUserAvatars != null)
-                {
-                    foreach (var avatarPiece in promotion.AvatarPieces)
-                    {
-                        var avatar = dbUserAvatars.Find(i => i.AvatarType == avatarPiece.AvatarType);
+                    break;
+				case StoreProductType.AvatarUpgrade:
 
-                        if (avatar != null)
-                        {
-                            avatar.Pieces += avatarPiece.Pieces;
-                        }
-                    }
-                }
+                    break;
+				case StoreProductType.Building:
+
+                    break;
+				case StoreProductType.BuildingUpgrade:
+
+                    break;
+				case StoreProductType.CurrencySpot:
+
+                    break;
+				case StoreProductType.ResourceMine:
+
+                    break;
+
+                default:
+                    return BadRequest("Invalid product type");
             }
 
             await m_CoreDbContext.SaveChangesAsync();
@@ -130,30 +125,10 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Could not find Users Wallet.");
             }
 
-            // Check user has enough to buy Resource Mine
-            var isSellSuccessful = false;
-            switch (resourceMine.ResourceMineType)
-            {
-                case ResourceMineType.Gold:
-                    if (dbUserWallet.Gold >= resourceMine.Price)
-                    {
-                        isSellSuccessful = true;
-                        dbUserWallet.Gold -= resourceMine.Price;
-                    }
-                    break;
-                case ResourceMineType.Gems:
-                    if (dbUserWallet.Gold >= resourceMine.Price)
-                    {
-                        isSellSuccessful = true;
-                        dbUserWallet.Gold -= resourceMine.Price;
-                    }
-                    break;
-            }
-
-            if (!isSellSuccessful)
-            {
-                return BadRequest("User does not have enough gold to buy this Resource Mine.");
-            }
+			if (!resourceMine.Cost.PurchaseWith(dbUserWallet, null))
+			{
+				return BadRequest("User does not have enough resources for this Resource Mine.");
+			}
 
             // Check User has the currency required
             var dbUserProfile = await m_CoreDbContext.UsersProfiles
@@ -191,8 +166,7 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbStoreCurrencySpot = m_ConfigDbContext.Store.CurrencySpots.Find(
-                i => i.ProductID == storeCurrencySpot.ProductID
-                && i.BuyAmount == storeCurrencySpot.BuyAmount);
+                i => i.ProductID == storeCurrencySpot.ProductID);
 
             if (dbStoreCurrencySpot == null)
             {
@@ -208,31 +182,48 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Could not find Users Wallet.");
             }
 
-            // Check user has enough Sell Currency Amount to purchase the Buy Currency Amount
-            var isSellSuccessful = false;
-
             if (!storeCurrencySpot.Cost.PurchaseWith(dbUserWallet))
             {
                 return BadRequest("User does not have enough resources.");
             }
 
-            if (!isSellSuccessful)
+            // Settle the buy part of the transaction
+            if (!storeCurrencySpot.Wallet.IsEmpty)
             {
-                return BadRequest("User does not have enough currency to sell to buy this amount of currency.");
+                dbUserWallet.Gems += storeCurrencySpot.Wallet.Gems;
+                dbUserWallet.Gold += storeCurrencySpot.Wallet.Gold;
+                dbUserWallet.HappyTokens += storeCurrencySpot.Wallet.HappyTokens;
             }
 
-            // Settle the buy part of the transaction
-            switch (storeCurrencySpot.BuyCurrencyType)
+            if (storeCurrencySpot.AvatarPieces != null)
             {
-                case CurrencyType.Gems:
-                    dbUserWallet.Gems += dbStoreCurrencySpot.BuyAmount;
-                    break;
-                case CurrencyType.Gold:
-                    dbUserWallet.Gold += dbStoreCurrencySpot.BuyAmount;
-                    break;
-                case CurrencyType.HappyTokens:
-                    dbUserWallet.HappyTokens += dbStoreCurrencySpot.BuyAmount;
-                    break;
+				var dbUsersAvatars = await m_CoreDbContext.UsersAvatars
+			    .Where(i => i.UserId == userId)
+			    .ToListAsync();
+                
+                foreach (var piece in storeCurrencySpot.AvatarPieces)
+                {
+                    var userAvatar = dbUsersAvatars.Find(i => i.AvatarType == piece.AvatarType);
+
+                    if (userAvatar == null)
+                    {
+                        // Create the new UserAvatar
+                        var dbUserAvatar = new DbUserAvatar()
+                        {
+                            UsersAvatarId = Guid.NewGuid().ToString(),
+                            UserId = userId,
+                            AvatarType = piece.AvatarType,
+                            Level = 0,
+                            Pieces = piece.Pieces
+                        };
+
+                        await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
+                    }
+                    else
+                    {
+                        userAvatar.Pieces += piece.Pieces;
+                    }
+                }
             }
 
             await m_CoreDbContext.SaveChangesAsync();
@@ -265,6 +256,8 @@ namespace HappyTokenApi.Controllers
             var dbUsersAvatars = await m_CoreDbContext.UsersAvatars
                 .Where(i => i.UserId == userId)
                 .ToListAsync();
+
+            // TODO: handle getting pieces before buying the avatar
 
             if (dbUsersAvatars.Exists(i => i.AvatarType == avatarType))
             {

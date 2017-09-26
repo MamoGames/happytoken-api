@@ -207,6 +207,10 @@ namespace HappyTokenApi.Controllers
                     .Where(i => i.UserId == userId)
                     .ToListAsync();
 
+				var dbUserStorePurchaseRecords = await m_CoreDbContext.UsersStorePurchaseRecords
+					.Where(i => i.UserId == userId)
+					.ToListAsync();
+
                 // Check if we give the players their daily reward
                 var dailyRewards = ProcessDailyReward(dbUserProfile, dbUserWallet);
 
@@ -219,6 +223,7 @@ namespace HappyTokenApi.Controllers
                     UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList(),
                     UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList(),
                     UserCakes = dbUserCakes.OfType<UserCake>().ToList(),
+                    UserStorePurchaseRecords = dbUserStorePurchaseRecords.OfType<UserStorePurchaseRecord>().ToList(),
                     DailyRewards = dailyRewards
                 };
 

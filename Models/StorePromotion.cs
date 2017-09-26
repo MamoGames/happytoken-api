@@ -3,38 +3,32 @@ using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
-	public class StorePromotion :IStoreProduct
+	public class StorePromotion
     {
-        public string Code { get; set; }
+        public StoreProductType StoreProductType { get; set; }
 
-        public string Name { get; set; }
+        public string PromotedProductID { get; set; }
+
+		public string Name { get; set; }
+
+		public string Title { get; set; }
+
+		public string Description { get; set; }
+
+		public string DetailedDescription { get; set; }
+
+		public string PrefabId { get; set; }
+
+        public string Code { get; set; }
 
         public DateTime StartDate { get; set; }
 
         public DateTime EndDate { get; set; }
 
-        public string Title { get; set; }
-
-        public string Description { get; set; }
-
-        public string DetailedDescription { get; set; }
-
-        public string Image { get; set; }
-
-        public string PrefabId { get; set; }
-
-		public bool IsVisible { get; set; }
-
-        public bool IsHighlighted { get; set; }
-
-        public int Price { get; set; }
-
-        public int Gold { get; set; }
-
-        public int Gems { get; set; }
-
-        public int HappyTokens { get; set; }
-
-        public List<AvatarPiece> AvatarPieces { get; set; }
+		/// <summary>
+		/// The discounted cost, use PromotedProductID to reference the original product price
+		/// </summary>
+		/// <value>The cost.</value>
+		public StoreProductCost Cost { get; set; }
     }
 }

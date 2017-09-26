@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using System.Collections.Generic;
 
 namespace HappyTokenApi.Controllers
 {
@@ -190,10 +191,8 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbStoreCurrencySpot = m_ConfigDbContext.Store.CurrencySpots.Find(
-                i => i.BuyCurrencyType == storeCurrencySpot.BuyCurrencyType
-                && i.BuyAmount == storeCurrencySpot.BuyAmount
-                && i.SellCurrencyType == storeCurrencySpot.SellCurrencyType
-                && i.SellAmount == storeCurrencySpot.SellAmount);
+                i => i.ProductID == storeCurrencySpot.ProductID
+                && i.BuyAmount == storeCurrencySpot.BuyAmount);
 
             if (dbStoreCurrencySpot == null)
             {
@@ -211,29 +210,10 @@ namespace HappyTokenApi.Controllers
 
             // Check user has enough Sell Currency Amount to purchase the Buy Currency Amount
             var isSellSuccessful = false;
-            switch (storeCurrencySpot.SellCurrencyType)
+
+            if (!storeCurrencySpot.Cost.PurchaseWith(dbUserWallet))
             {
-                case CurrencyType.Gems:
-                    if (dbUserWallet.Gems >= dbStoreCurrencySpot.SellAmount)
-                    {
-                        isSellSuccessful = true;
-                        dbUserWallet.Gems -= dbStoreCurrencySpot.SellAmount;
-                    }
-                    break;
-                case CurrencyType.Gold:
-                    if (dbUserWallet.Gold >= dbStoreCurrencySpot.SellAmount)
-                    {
-                        isSellSuccessful = true;
-                        dbUserWallet.Gold -= dbStoreCurrencySpot.SellAmount;
-                    }
-                    break;
-                case CurrencyType.HappyTokens:
-                    if (dbUserWallet.HappyTokens >= dbStoreCurrencySpot.SellAmount)
-                    {
-                        isSellSuccessful = true;
-                        dbUserWallet.HappyTokens -= dbStoreCurrencySpot.SellAmount;
-                    }
-                    break;
+                return BadRequest("User does not have enough resources.");
             }
 
             if (!isSellSuccessful)
@@ -301,25 +281,10 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Could not find users wallet.");
             }
 
-            if (dbUserWallet.Gold < dbAvatar.Gold)
-            {
-                return BadRequest("User does not have enough Gold for this Avatar.");
-            }
-
-            if (dbUserWallet.Gems < dbAvatar.Gems)
-            {
-                return BadRequest("User does not have enough Gems for this Avatar.");
-            }
-
-            if (dbUserWallet.HappyTokens < dbAvatar.HappyTokens)
-            {
-                return BadRequest("User does not have enough HappyTokens for this Avatar.");
-            }
-
-            // Deduct the currencies required for the Avatar from the users Wallet
-            dbUserWallet.Gold -= dbAvatar.Gold;
-            dbUserWallet.Gems -= dbAvatar.Gems;
-            dbUserWallet.HappyTokens -= dbAvatar.HappyTokens;
+			if (!dbAvatar.Cost.PurchaseWith(dbUserWallet, dbUsersAvatars.OfType<UserAvatar>().ToList()))
+			{
+                return BadRequest("User does not have enough resources for this Avatar.");
+			}
 
             // Create the new UserAvatar
             var dbUserAvatar = new DbUserAvatar()
@@ -401,13 +366,12 @@ namespace HappyTokenApi.Controllers
                 .Where(i => i.UserId == userId)
                 .SingleOrDefaultAsync();
 
-            if (dbUserWallet == null || dbUserWallet.Gold < avatarUpgrade.Gold)
-            {
-                return BadRequest("User does not have enough Gold for this AvatarUpgrade.");
-            }
+            if (!avatarUpgrade.Cost.PurchaseWith(dbUserWallet, new List<UserAvatar> { dbUserAvatar, }))
+			{
+				return BadRequest("User does not have enough resources for this AvatarUpgrade.");
+			}
 
             // Deduct the currency and upgrade the avatars level
-            dbUserWallet.Gold -= avatarUpgrade.Gold;
             dbUserAvatar.Level = avatarUpgrade.Level;
 
             await m_CoreDbContext.SaveChangesAsync();
@@ -456,13 +420,10 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Could not find users wallet.");
             }
 
-            if (dbUserWallet.Gold < dbBuilding.Gold)
-            {
-                return BadRequest("User does not have enough Gold for this Building.");
-            }
-
-            // Deduct the currencies required for the Avatar from the users Wallet
-            dbUserWallet.Gold -= dbBuilding.Gold;
+			if (!dbBuilding.Cost.PurchaseWith(dbUserWallet))
+			{
+				return BadRequest("User does not have enough resources for this Building.");
+			}
 
             // Create the new UserAvatar
             var dbUserBuilding = new DbUserBuilding()
@@ -543,13 +504,11 @@ namespace HappyTokenApi.Controllers
                 .Where(i => i.UserId == userId)
                 .SingleOrDefaultAsync();
 
-            if (dbUserWallet == null || dbUserWallet.Gold < buildingUpgrade.Gold)
+            if (!buildingUpgrade.Cost.PurchaseWith(dbUserWallet))
             {
-                return BadRequest("User does not have enough Gold for this BuildingUpgrade.");
+                return BadRequest("User does not have enough resources for this BuildingUpgrade.");
             }
 
-            // Deduct the currency and upgrade the avatars level
-            dbUserWallet.Gold -= buildingUpgrade.Gold;
             dbUserBuilding.Level = buildingUpgrade.Level;
 
             await m_CoreDbContext.SaveChangesAsync();

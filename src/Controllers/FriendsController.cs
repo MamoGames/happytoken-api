@@ -201,10 +201,110 @@ namespace HappyTokenApi.Controllers
             // Increment the Users friend count
             dbUserProfile.FriendCount++;
 
-            await m_CoreDbContext.SaveChangesAsync();
+			//TODO: add friend count for target
+
+			await m_CoreDbContext.SaveChangesAsync();
 
             // Grab the entire (updated) list of friends, and return to the user
             return await GetFriends();
         }
+
+		[Authorize]
+		[HttpPost("remove", Name = nameof(RemoveFriendByUserId))]
+		public async Task<IActionResult> RemoveFriendByUserId([FromBody] string friendUserId)
+		{
+			if (string.IsNullOrEmpty(friendUserId))
+			{
+				return BadRequest("Friend UserId was invalid.");
+			}
+
+			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
+			//if (this.IsValidUserId(friendUserId))
+			//{
+			//    return Forbid("Friend UserId is not valid.");
+			//}
+
+			var userId = this.GetClaimantUserId();
+
+			// Check users friend count
+			var dbUserProfile = await m_CoreDbContext.UsersProfiles
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserProfile == null)
+			{
+				return BadRequest("Profile for UserId was not found.");
+			}
+
+			var dbUserFriends = await m_CoreDbContext.UsersFriends
+				.Where(i => i.UserId == userId)
+				.ToListAsync();
+
+			if (dbUserFriends == null) return BadRequest("User is not in friend list.");
+
+			// Check user is not already friend in either direction
+			var userFriend = dbUserFriends.Find(i => i.FriendUserId == friendUserId);
+			if (userFriend == null)
+			{
+				return BadRequest("User is not in friend list.");
+			}
+
+			// Remove user and friends relationship
+			m_CoreDbContext.UsersFriends.Remove(userFriend);
+
+			// Remove friend and user's relationship
+			userFriend = await m_CoreDbContext.UsersFriends
+				.Where(i => i.UserId == friendUserId && i.FriendUserId == userId)
+				.SingleAsync();
+            
+			m_CoreDbContext.UsersFriends.Remove(userFriend);
+
+			// Increment the Users friend count
+			dbUserProfile.FriendCount--;
+
+            //TODO: remove friend count from target
+
+			await m_CoreDbContext.SaveChangesAsync();
+
+			// Grab the entire (updated) list of friends, and return to the user
+			return await GetFriends();
+		}
+
+		[Authorize]
+		[HttpPost("search", Name = nameof(SearchUsers))]
+		public async Task<IActionResult> SearchUsers([FromBody] string userName)
+		{
+			var userId = this.GetClaimantUserId();
+
+			var fromDate = DateTime.UtcNow - TimeSpan.FromHours(24);
+
+			var dbUserProfiles = await m_CoreDbContext.UsersProfiles
+				.Where(i => i.Name.ToLower().Contains(userName.ToLower()))
+				.Take(20)
+				.ToListAsync();
+
+			var friends = new List<FriendInfo>();
+
+			foreach (var profile in dbUserProfiles)
+			{
+				// exclude self
+				if (profile.UserId == userId) continue;
+
+				var friendInfo = new FriendInfo
+				{
+					UserId = userId,
+					FriendUserId = profile.UserId,
+					Name = profile.Name,
+					LastSeenDate = profile.LastSeenDate,
+					LastVisitDate = DateTime.MinValue,
+					Level = profile.Level,
+					Happiness = new Happiness() // Do we want Happiness?
+				};
+
+				friends.Add(friendInfo);
+			}
+
+			return Ok(friends);
+		}
     }
 }

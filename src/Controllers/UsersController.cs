@@ -58,7 +58,7 @@ namespace HappyTokenApi.Controllers
             {
                 UsersProfileId = Guid.NewGuid().ToString(),
                 UserId = userId,
-                Name = m_ConfigDbContext.UserDefaults.Profile.Name,
+                Name = m_ConfigDbContext.UserDefaults.Profile.Name + new Random().Next(10000),
                 Xp = m_ConfigDbContext.UserDefaults.Profile.Xp,
                 CreateDate = DateTime.UtcNow,
                 LastSeenDate = DateTime.UtcNow,

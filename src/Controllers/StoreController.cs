@@ -27,6 +27,38 @@ namespace HappyTokenApi.Controllers
             m_ConfigDbContext = configDbContext;
         }
 
+		/// <summary>
+		/// Add a purchase record for the product ID with the product type
+		/// </summary>
+		/// <param name="productId">Product identifier.</param>
+		protected async Task AddStoreProductPurchaseRecord(string productId)
+        {
+            var userId = this.GetClaimantUserId();
+
+			var dbPurchaseRecord = await m_CoreDbContext.UsersStorePurchaseRecords
+				.Where(i => i.UserId == userId && i.StoreProductId == productId)
+				.SingleOrDefaultAsync();
+
+            if (dbPurchaseRecord == null)
+            {
+                dbPurchaseRecord = new DbUserStorePurchaseRecord()
+                {
+                    UsersStorePurchaseRecordId = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    StoreProductId = productId,
+                    LastPurchase = DateTime.UtcNow,
+                    Count = 1
+                };
+
+                await m_CoreDbContext.UsersStorePurchaseRecords.AddAsync(dbPurchaseRecord);
+            }
+            else
+            {
+                dbPurchaseRecord.Count += 1;
+                dbPurchaseRecord.LastPurchase = DateTime.UtcNow;
+            }
+        }
+
         [Authorize]
         [HttpPost("promotions", Name = nameof(BuyPromotion))]
         public async Task<IActionResult> BuyPromotion([FromBody] string promotionId)
@@ -91,6 +123,8 @@ namespace HappyTokenApi.Controllers
                     return BadRequest("Invalid product type");
             }
 
+            await this.AddStoreProductPurchaseRecord(promotion.PromotedProductId);
+
             await m_CoreDbContext.SaveChangesAsync();
 
             // Send the updated Wallet back to the user
@@ -147,6 +181,8 @@ namespace HappyTokenApi.Controllers
                     dbUserProfile.GemMineDaysRemaining += resourceMine.Days;
                     break;
             }
+
+            await this.AddStoreProductPurchaseRecord(resourceMine.ProductId);
 
             await m_CoreDbContext.SaveChangesAsync();
 
@@ -228,6 +264,8 @@ namespace HappyTokenApi.Controllers
                 }
             }
 
+            await this.AddStoreProductPurchaseRecord(storeCurrencySpot.ProductId);
+
             await m_CoreDbContext.SaveChangesAsync();
 
             // Send the updated Wallet back to the user
@@ -305,6 +343,8 @@ namespace HappyTokenApi.Controllers
             dbUserHappiness.Add(happinessType, happinessAmount);
 
             await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
+
+            await this.AddStoreProductPurchaseRecord(dbAvatar.ProductId);
 
             await m_CoreDbContext.SaveChangesAsync();
 
@@ -444,6 +484,8 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.UsersBuildings.AddAsync(dbUserBuilding);
 
+            await this.AddStoreProductPurchaseRecord(dbBuilding.ProductId);
+
             await m_CoreDbContext.SaveChangesAsync();
 
             // Send the updated Wallet back to the user
@@ -513,5 +555,52 @@ namespace HappyTokenApi.Controllers
 
             return Ok(wallet);
         }
+
+		[Authorize]
+		[HttpPost("o2oproducts", Name = nameof(BuyO2OProduct))]
+		public async Task<IActionResult> BuyO2OProduct([FromBody] StoreO2OProduct storeO2OProduct)
+		{
+			var userId = this.GetClaimantUserId();
+
+			if (!this.IsValidUserId(userId))
+			{
+				return BadRequest("UserId is invalid.");
+			}
+
+			var dbStoreO2OProduct = m_ConfigDbContext.Store.O2OProducts.Find(
+				i => i.ProductId == storeO2OProduct.ProductId);
+
+			if (dbStoreO2OProduct == null)
+			{
+				return BadRequest("Requested O2OProduct is invalid.");
+			}
+
+			var dbUserWallet = await m_CoreDbContext.UsersWallets
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserWallet == null)
+			{
+				return BadRequest("Could not find Users Wallet.");
+			}
+
+			if (!storeO2OProduct.Cost.PurchaseWith(dbUserWallet))
+			{
+				return BadRequest("User does not have enough resources.");
+			}
+
+            //TODO: handle O2O product purchase
+
+
+			
+            await this.AddStoreProductPurchaseRecord(storeO2OProduct.ProductId);
+
+			await m_CoreDbContext.SaveChangesAsync();
+
+			// Send the updated Wallet back to the user
+			var wallet = (Wallet)dbUserWallet;
+
+			return Ok(wallet);
+		}
     }
 }

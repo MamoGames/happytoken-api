@@ -29,7 +29,6 @@ namespace HappyTokenApi.Models
             }  
         }
 
-
         public bool IsIAP
         {
             get

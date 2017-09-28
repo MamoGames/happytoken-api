@@ -14,5 +14,7 @@ namespace HappyTokenApi.Models
         public int MaxCakeGiftPerDay { get; set; }
 
         public int MaxFriendVisitPerDay { get; set; }
+
+        public int MaxCakeCount { get; set; }
     }
 }

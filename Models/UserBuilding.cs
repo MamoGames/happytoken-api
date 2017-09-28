@@ -8,5 +8,7 @@ namespace HappyTokenApi.Models
 		public BuildingType BuildingType { get; set; }
 
 		public int Level { get; set; }
+
+        public int Order { get; set; }
 	}
 }

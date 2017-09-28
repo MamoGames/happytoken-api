@@ -117,6 +117,7 @@ namespace HappyTokenApi.Controllers
 
             // Create default buildings (Buildings give happiness, allocate based on Level1)
             var dbUsersBuildings = new List<DbUserBuilding>();
+            int buildingCount = 0;
             foreach (var buildingType in m_ConfigDbContext.UserDefaults.BuildingTypes)
             {
                 var userBuilding = new DbUserBuilding()
@@ -124,8 +125,11 @@ namespace HappyTokenApi.Controllers
                     UsersBuildingId = Guid.NewGuid().ToString(),
                     UserId = userId,
                     BuildingType = buildingType,
-                    Level = 1
+                    Level = 1,
+                    Order = buildingCount,
                 };
+
+                buildingCount += 1;
 
                 // Grab the default avatar config
                 var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);

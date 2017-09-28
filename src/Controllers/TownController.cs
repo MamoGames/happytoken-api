@@ -27,8 +27,8 @@ namespace HappyTokenApi.Controllers
 		}
 
 		[Authorize]
-		[HttpPost("update", Name = nameof(updateUserBuilding))]
-		public async Task<IActionResult> updateUserBuilding([FromBody] List<UserBuilding> userBuildings)
+		[HttpPost("buildingsupdate", Name = nameof(UpdateUserBuildings))]
+		public async Task<IActionResult> UpdateUserBuildings([FromBody] List<UserBuilding> userBuildings)
 		{
 			var userId = this.GetClaimantUserId();
 

@@ -10,5 +10,6 @@ namespace HappyTokenApi.Models
         BuildingUpgrade,
         CurrencySpot,
         ResourceMine,
+        O2OProduct,
     }
 }

@@ -317,5 +317,68 @@ namespace HappyTokenApi.Controllers
 
 			return Ok(friends);
 		}
+
+		[Authorize]
+		[HttpPost("giftcake", Name = nameof(GiftCakeToFriend))]
+		public async Task<IActionResult> GiftCakeToFriend([FromBody] string friendUserId)
+		{
+			if (string.IsNullOrEmpty(friendUserId))
+			{
+				return BadRequest("Friend UserId was invalid.");
+			}
+
+			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
+			//if (this.IsValidUserId(friendUserId))
+			//{
+			//    return Forbid("Friend UserId is not valid.");
+			//}
+
+			var userId = this.GetClaimantUserId();
+
+			// Check users friend count
+			var dbUserProfile = await m_CoreDbContext.UsersProfiles
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserProfile == null)
+			{
+				return BadRequest("Profile for UserId was not found.");
+			}
+
+			var dbUserFriend = await m_CoreDbContext.UsersFriends
+				.Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserFriend == null) return BadRequest("User is not in friend list.");
+
+            // check if the user has already gifted the friend or has reached the max number of gift today
+			var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
+            dbUserDailyActions.Update();
+
+            if (dbUserDailyActions.GiftedCakeUserIds.Contains(friendUserId)) return BadRequest("User has already gifted the friend today.");
+
+            if (dbUserDailyActions.GiftedCakeUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxCakeGiftPerDay) return BadRequest("User cannot gift more friends today.");
+
+            dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
+
+			var dbUserHappiness = await m_CoreDbContext.UsersHappiness
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+            // TODO: make it a message based gifting. There is no messaging function yet so we do it instantly. 
+
+            if (dbUserHappiness == null) return BadRequest("User happiness is not found.");
+
+            dbUserHappiness.Social += 1;
+
+			
+			await m_CoreDbContext.SaveChangesAsync();
+
+            return Ok(dbUserDailyActions);
+		}
     }
 }

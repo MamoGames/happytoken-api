@@ -23,6 +23,8 @@ namespace HappyTokenApi.Data.Core
 
         public DbSet<DbUserStorePurchaseRecord> UsersStorePurchaseRecords { get; set; }
 
+        public DbSet<DBUserDailyActions> UsersDailyActions { get; set; }
+
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
     }
 }

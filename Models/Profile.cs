@@ -21,5 +21,7 @@ namespace HappyTokenApi.Models
         public int GemMineDaysRemaining { get; set; }
 
         public int FriendCount { get; set; }
+
+        public int CakeDonated { get; set; }
     }
 }

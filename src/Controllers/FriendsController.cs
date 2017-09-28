@@ -52,6 +52,7 @@ namespace HappyTokenApi.Controllers
                     LastSeenDate = profile.LastSeenDate,
                     LastVisitDate = DateTime.MinValue,
                     Level = profile.Level,
+                    CakeDonated = profile.CakeDonated,
                     Happiness = new Happiness() // Do we want Happiness?
                 };
 
@@ -111,6 +112,7 @@ namespace HappyTokenApi.Controllers
                     friend.Level = profile.Level;
                     friend.Name = profile.Name;
                     friend.LastSeenDate = profile.LastSeenDate;
+                    friend.CakeDonated = profile.CakeDonated;
                 }
 
                 var happiness = dbUserHappiness.Find(i => i.UserId == dbUserFriend.FriendUserId);
@@ -301,14 +303,15 @@ namespace HappyTokenApi.Controllers
 				// exclude self
 				if (profile.UserId == userId) continue;
 
-				var friendInfo = new FriendInfo
-				{
-					UserId = userId,
-					FriendUserId = profile.UserId,
-					Name = profile.Name,
-					LastSeenDate = profile.LastSeenDate,
-					LastVisitDate = DateTime.MinValue,
-					Level = profile.Level,
+                var friendInfo = new FriendInfo
+                {
+                    UserId = userId,
+                    FriendUserId = profile.UserId,
+                    Name = profile.Name,
+                    LastSeenDate = profile.LastSeenDate,
+                    LastVisitDate = DateTime.MinValue,
+                    Level = profile.Level,
+                    CakeDonated = profile.CakeDonated,
 					Happiness = new Happiness() // Do we want Happiness?
 				};
 
@@ -374,6 +377,7 @@ namespace HappyTokenApi.Controllers
             if (dbUserHappiness == null) return BadRequest("User happiness is not found.");
 
             dbUserHappiness.Social += 1;
+            dbUserProfile.CakeDonated += 1;
 
 			
 			await m_CoreDbContext.SaveChangesAsync();
@@ -413,6 +417,8 @@ namespace HappyTokenApi.Controllers
 				.SingleOrDefaultAsync();
 
 			if (dbUserFriend == null) return BadRequest("User is not in friend list.");
+
+            dbUserFriend.LastVisitDate = DateTime.UtcNow;
 
 			// check if the user has already gifted the friend or has reached the max number of gift today
 			var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions

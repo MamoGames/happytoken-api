@@ -13,6 +13,8 @@ namespace HappyTokenApi.Models
 
         public int Level { get; set; }
 
+        public int CakeDonated { get; set; }
+
 		public List<UserAvatar> UserAvatars { get; set; }
 
 		public List<UserBuilding> UserBuildings { get; set; }

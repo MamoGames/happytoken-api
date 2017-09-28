@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace HappyTokenApi.Models
 {
@@ -9,7 +9,7 @@ namespace HappyTokenApi.Models
         Building,
         BuildingUpgrade,
         CurrencySpot,
-        ResourceMine,
-        O2OProduct,
+		ResourceMine,
+		O2OProduct,
     }
 }

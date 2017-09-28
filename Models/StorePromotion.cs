@@ -53,9 +53,22 @@ namespace HappyTokenApi.Models
 					return store.CurrencySpots.Find(i => i.ProductId == this.PromotedProductId);
 				case StoreProductType.ResourceMine:
 					return store.ResourceMines.Find(i => i.ProductId == this.PromotedProductId);
+				case StoreProductType.O2OProduct:
+					return store.IsO2OOpen ? store.O2OProducts.Find(i => i.ProductId == this.PromotedProductId) : null;
             }
 
             return null;
         }
+
+		public bool IsValid()
+		{
+			var now = DateTime.UtcNow;
+
+			if (this.EndDate != default(DateTime) && now > this.EndDate) return false;
+
+			else if (this.StartDate != default(DateTime) && now < this.StartDate) return false;
+
+			else return true;
+		}
     }
 }

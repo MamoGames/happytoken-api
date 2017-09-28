@@ -33,9 +33,9 @@ namespace HappyTokenApi.Models
         {
             var now = DateTime.Now;
 
-            if (this.After != null && now < this.After) return false;
+			if (this.After != default(DateTime) && now < this.After) return false;
 
-            if (this.Before != null && now > this.Before) return false;
+			if (this.Before != default(DateTime) && now > this.Before) return false;
 
             if (MinLevel > 0 && (userLogin.Profile.Level < MinLevel)) return false;
 

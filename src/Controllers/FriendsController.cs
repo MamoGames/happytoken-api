@@ -380,5 +380,66 @@ namespace HappyTokenApi.Controllers
 
             return Ok(dbUserDailyActions);
 		}
+
+		[Authorize]
+		[HttpPost("visit", Name = nameof(VisitFriend))]
+		public async Task<IActionResult> VisitFriend([FromBody] string friendUserId)
+		{
+			if (string.IsNullOrEmpty(friendUserId))
+			{
+				return BadRequest("Friend UserId was invalid.");
+			}
+
+			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
+			//if (this.IsValidUserId(friendUserId))
+			//{
+			//    return Forbid("Friend UserId is not valid.");
+			//}
+
+			var userId = this.GetClaimantUserId();
+
+			// Check users friend count
+			var dbUserProfile = await m_CoreDbContext.UsersProfiles
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserProfile == null)
+			{
+				return BadRequest("Profile for UserId was not found.");
+			}
+
+			var dbUserFriend = await m_CoreDbContext.UsersFriends
+				.Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserFriend == null) return BadRequest("User is not in friend list.");
+
+			// check if the user has already gifted the friend or has reached the max number of gift today
+			var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
+			dbUserDailyActions.Update();
+
+			if (dbUserDailyActions.VisitedUserIds.Contains(friendUserId)) return BadRequest("User has already gifted the friend today.");
+
+			if (dbUserDailyActions.VisitedUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxFriendVisitPerDay) return BadRequest("User cannot gift more friends today.");
+
+			dbUserDailyActions.VisitedUserIds = dbUserDailyActions.VisitedUserIds.ToList().Append(friendUserId).ToArray();
+
+            var dbFriendHappiness = await m_CoreDbContext.UsersHappiness
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+            if (dbFriendHappiness != null) 
+            {
+				dbFriendHappiness.Social += 1;
+            }
+
+			await m_CoreDbContext.SaveChangesAsync();
+
+			return Ok(dbUserDailyActions);
+		}
     }
 }

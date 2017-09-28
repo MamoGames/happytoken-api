@@ -120,6 +120,17 @@ namespace HappyTokenApi.Controllers
                     friend.Happiness = happiness;
                 }
 
+				var dbUserAvatars = await m_CoreDbContext.UsersAvatars
+					.Where(i => i.UserId == dbUserFriend.FriendUserId)
+					.ToListAsync();
+                
+				var dbUserBuildings = await m_CoreDbContext.UsersBuildings
+					.Where(i => i.UserId == dbUserFriend.FriendUserId)
+					.ToListAsync();
+
+                friend.UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList();
+                friend.UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList();
+
                 friends.Add(friend);
             }
 

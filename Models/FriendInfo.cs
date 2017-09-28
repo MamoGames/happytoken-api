@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
@@ -11,5 +12,9 @@ namespace HappyTokenApi.Models
         public Happiness Happiness { get; set; }
 
         public int Level { get; set; }
+
+		public List<UserAvatar> UserAvatars { get; set; }
+
+		public List<UserBuilding> UserBuildings { get; set; }
     }
 }

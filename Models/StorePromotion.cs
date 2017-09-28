@@ -57,5 +57,16 @@ namespace HappyTokenApi.Models
 
             return null;
         }
+
+		public bool IsValid()
+		{
+			var now = DateTime.UtcNow;
+
+			if (this.EndDate != default(DateTime) && now > this.EndDate) return false;
+
+			else if (this.StartDate != default(DateTime) && now < this.StartDate) return false;
+
+			else return true;
+		}
     }
 }

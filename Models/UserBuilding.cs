@@ -9,6 +9,6 @@ namespace HappyTokenApi.Models
 
 		public int Level { get; set; }
 
-        public int Order { get; set; }
+        public int Position { get; set; }
 	}
 }

@@ -126,7 +126,7 @@ namespace HappyTokenApi.Controllers
                     UserId = userId,
                     BuildingType = buildingType,
                     Level = 1,
-                    Order = buildingCount,
+                    Position = buildingCount,
                 };
 
                 buildingCount += 1;

@@ -101,21 +101,27 @@ namespace HappyTokenApi.Controllers
             switch (promotion.StoreProductType)
             {
 				case StoreProductType.Avatar:
+                    var resultBuyAvatar = await this.ReceiveProductForAvatarPurchase(userId, (promotedProduct as StoreAvatar).AvatarType);
+                    if (resultBuyAvatar != null) return resultBuyAvatar;
 
                     break;
 				case StoreProductType.AvatarUpgrade:
-
-                    break;
+                    return BadRequest("Not supported.");
 				case StoreProductType.Building:
+					var resultBuyBuilding = await this.ReceiveProductForBuildingPurchase(userId, (promotedProduct as StoreBuilding).BuildingType);
+					if (resultBuyBuilding != null) return resultBuyBuilding;
 
                     break;
 				case StoreProductType.BuildingUpgrade:
-
-                    break;
+                    return BadRequest("Not supported.");
 				case StoreProductType.CurrencySpot:
+                    var resultBuyCurrencySpot = await this.ReceiveProductForCurrencySpot(userId, dbUserWallet, (promotedProduct as StoreCurrencySpot));
+                    if (resultBuyCurrencySpot != null) return resultBuyCurrencySpot;
 
                     break;
-				case StoreProductType.ResourceMine:
+                case StoreProductType.ResourceMine:
+                    var resultBuyResourceMine = await this.ReceiveProductForResourceMine(userId, (promotedProduct as ResourceMine));
+					if (resultBuyResourceMine != null) return resultBuyResourceMine;
 
                     break;
 
@@ -166,21 +172,8 @@ namespace HappyTokenApi.Controllers
 				return BadRequest("User does not have enough resources for this Resource Mine.");
 			}
 
-            // Check User has the currency required
-            var dbUserProfile = await m_CoreDbContext.UsersProfiles
-                .Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
-
-            // Settle the buy part of the transaction
-            switch (resourceMine.ResourceMineType)
-            {
-                case ResourceMineType.Gold:
-                    dbUserProfile.GoldMineDaysRemaining += resourceMine.Days;
-                    break;
-                case ResourceMineType.Gems:
-                    dbUserProfile.GemMineDaysRemaining += resourceMine.Days;
-                    break;
-            }
+            var result = await this.ReceiveProductForResourceMine(userId, resourceMine);
+            if (result != null) return result;
 
             await this.AddStoreProductPurchaseRecord(resourceMine.ProductId);
 
@@ -225,44 +218,8 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User does not have enough resources.");
             }
 
-            // Settle the buy part of the transaction
-            if (!storeCurrencySpot.Wallet.IsEmpty)
-            {
-                dbUserWallet.Gems += storeCurrencySpot.Wallet.Gems;
-                dbUserWallet.Gold += storeCurrencySpot.Wallet.Gold;
-                dbUserWallet.HappyTokens += storeCurrencySpot.Wallet.HappyTokens;
-            }
-
-            if (storeCurrencySpot.AvatarPieces != null)
-            {
-				var dbUsersAvatars = await m_CoreDbContext.UsersAvatars
-			    .Where(i => i.UserId == userId)
-			    .ToListAsync();
-                
-                foreach (var piece in storeCurrencySpot.AvatarPieces)
-                {
-                    var userAvatar = dbUsersAvatars.Find(i => i.AvatarType == piece.AvatarType);
-
-                    if (userAvatar == null)
-                    {
-                        // Create the new UserAvatar
-                        var dbUserAvatar = new DbUserAvatar()
-                        {
-                            UsersAvatarId = Guid.NewGuid().ToString(),
-                            UserId = userId,
-                            AvatarType = piece.AvatarType,
-                            Level = 0,
-                            Pieces = piece.Pieces
-                        };
-
-                        await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
-                    }
-                    else
-                    {
-                        userAvatar.Pieces += piece.Pieces;
-                    }
-                }
-            }
+            var result = await this.ReceiveProductForCurrencySpot(userId, dbUserWallet, storeCurrencySpot);
+            if (result != null) return result;
 
             await this.AddStoreProductPurchaseRecord(storeCurrencySpot.ProductId);
 
@@ -319,30 +276,8 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User does not have enough resources for this Avatar.");
 			}
 
-            // Create the new UserAvatar
-            var dbUserAvatar = new DbUserAvatar()
-            {
-                UsersAvatarId = Guid.NewGuid().ToString(),
-                UserId = userId,
-                AvatarType = avatarType,
-                Level = 1,
-                Pieces = 0
-            };
-
-            // Add the happiness gained from Level1 to the users Happiness
-            var avatar = m_ConfigDbContext.Avatars.Avatars.Find(i => i.AvatarType == avatarType);
-
-            var happinessType = avatar.HappinessType;
-            var happinessAmount = avatar.Levels[0].Happiness;
-
-            var dbUserHappiness = await m_CoreDbContext.UsersHappiness
-                .Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
-
-            // Update the users Avatars and Happiness accordingly
-            dbUserHappiness.Add(happinessType, happinessAmount);
-
-            await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
+            var result = await this.ReceiveProductForAvatarPurchase(userId, avatarType);
+            if (result != null) return result;
 
             await this.AddStoreProductPurchaseRecord(dbAvatar.ProductId);
 
@@ -435,16 +370,6 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("BuildingType is invalid.");
             }
 
-            // Check if User owns the Avatar and avatar is 1 - Upgrade level
-            var dbUsersBuildings = await m_CoreDbContext.UsersBuildings
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            if (dbUsersBuildings.Exists(i => i.BuildingType == buildingType))
-            {
-                return BadRequest("User already owns this Building.");
-            }
-
             // Check User has the currency required
             var dbUserWallet = await m_CoreDbContext.UsersWallets
                 .Where(i => i.UserId == userId)
@@ -460,29 +385,8 @@ namespace HappyTokenApi.Controllers
 				return BadRequest("User does not have enough resources for this Building.");
 			}
 
-            // Create the new UserAvatar
-            var dbUserBuilding = new DbUserBuilding()
-            {
-                UsersBuildingId = Guid.NewGuid().ToString(),
-                UserId = userId,
-                BuildingType = buildingType,
-                Level = 1,
-            };
-
-            // Add the happiness gained from Level1 to the users Happiness
-            var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);
-
-            var happinessType = building.HappinessType;
-            var happinessAmount = building.Levels[0].Happiness;
-
-            var dbUserHappiness = await m_CoreDbContext.UsersHappiness
-                .Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
-
-            // Update the users Avatars and Happiness accordingly
-            dbUserHappiness.Add(happinessType, happinessAmount);
-
-            await m_CoreDbContext.UsersBuildings.AddAsync(dbUserBuilding);
+            var result = await this.ReceiveProductForBuildingPurchase(userId, buildingType);
+            if (result != null) return null;
 
             await this.AddStoreProductPurchaseRecord(dbBuilding.ProductId);
 
@@ -494,6 +398,7 @@ namespace HappyTokenApi.Controllers
             return Ok(wallet);
         }
 
+       
         [Authorize]
         [HttpPost("buildingupgrades", Name = nameof(BuyBuildingUpgrade))]
         public async Task<IActionResult> BuyBuildingUpgrade([FromBody] StoreBuildingUpgrade storeBuildingUpgrade)
@@ -602,5 +507,142 @@ namespace HappyTokenApi.Controllers
 
 			return Ok(wallet);
 		}
-    }
+
+		protected async Task<IActionResult> ReceiveProductForAvatarPurchase(string userId, AvatarType avatarType)
+		{
+			// Create the new UserAvatar
+			var dbUserAvatar = new DbUserAvatar()
+			{
+				UsersAvatarId = Guid.NewGuid().ToString(),
+				UserId = userId,
+				AvatarType = avatarType,
+				Level = 1,
+				Pieces = 0
+			};
+
+			// Add the happiness gained from Level1 to the users Happiness
+			var avatar = m_ConfigDbContext.Avatars.Avatars.Find(i => i.AvatarType == avatarType);
+
+			var happinessType = avatar.HappinessType;
+			var happinessAmount = avatar.Levels[0].Happiness;
+
+			var dbUserHappiness = await m_CoreDbContext.UsersHappiness
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			// Update the users Avatars and Happiness accordingly
+			dbUserHappiness.Add(happinessType, happinessAmount);
+
+			await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
+
+			return null;
+		}
+
+		protected async Task<IActionResult> ReceiveProductForResourceMine(string userId, ResourceMine resourceMine)
+		{
+			// Check User has the currency required
+			var dbUserProfile = await m_CoreDbContext.UsersProfiles
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			// Settle the buy part of the transaction
+			switch (resourceMine.ResourceMineType)
+			{
+				case ResourceMineType.Gold:
+					dbUserProfile.GoldMineDaysRemaining += resourceMine.Days;
+					break;
+				case ResourceMineType.Gems:
+					dbUserProfile.GemMineDaysRemaining += resourceMine.Days;
+					break;
+				default:
+					return BadRequest("Unsupported ResourceMineType");
+			}
+
+			return null;
+		}
+
+		protected async Task<IActionResult> ReceiveProductForCurrencySpot(string userId, DbUserWallet dbUserWallet, StoreCurrencySpot storeCurrencySpot)
+		{
+			// Settle the buy part of the transaction
+			if (!storeCurrencySpot.Wallet.IsEmpty)
+			{
+				dbUserWallet.Gems += storeCurrencySpot.Wallet.Gems;
+				dbUserWallet.Gold += storeCurrencySpot.Wallet.Gold;
+				dbUserWallet.HappyTokens += storeCurrencySpot.Wallet.HappyTokens;
+			}
+
+			if (storeCurrencySpot.AvatarPieces != null)
+			{
+				var dbUsersAvatars = await m_CoreDbContext.UsersAvatars
+				.Where(i => i.UserId == userId)
+				.ToListAsync();
+
+				foreach (var piece in storeCurrencySpot.AvatarPieces)
+				{
+					var userAvatar = dbUsersAvatars.Find(i => i.AvatarType == piece.AvatarType);
+
+					if (userAvatar == null)
+					{
+						// Create the new UserAvatar
+						var dbUserAvatar = new DbUserAvatar()
+						{
+							UsersAvatarId = Guid.NewGuid().ToString(),
+							UserId = userId,
+							AvatarType = piece.AvatarType,
+							Level = 0,
+							Pieces = piece.Pieces
+						};
+
+						await m_CoreDbContext.UsersAvatars.AddAsync(dbUserAvatar);
+					}
+					else
+					{
+						userAvatar.Pieces += piece.Pieces;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		protected async Task<IActionResult> ReceiveProductForBuildingPurchase(string userId, BuildingType buildingType)
+		{
+			// Check if User owns the Building
+			var dbUsersBuildings = await m_CoreDbContext.UsersBuildings
+				.Where(i => i.UserId == userId)
+				.ToListAsync();
+
+			if (dbUsersBuildings.Exists(i => i.BuildingType == buildingType))
+			{
+				return BadRequest("User already owns this Building.");
+			}
+
+			// Create the new UserBuilding
+			var dbUserBuilding = new DbUserBuilding()
+			{
+				UsersBuildingId = Guid.NewGuid().ToString(),
+				UserId = userId,
+				BuildingType = buildingType,
+				Level = 1,
+			};
+
+			// Add the happiness gained from Level1 to the users Happiness
+			var building = m_ConfigDbContext.Buildings.Buildings.Find(i => i.BuildingType == buildingType);
+
+			var happinessType = building.HappinessType;
+			var happinessAmount = building.Levels[0].Happiness;
+
+			var dbUserHappiness = await m_CoreDbContext.UsersHappiness
+				.Where(i => i.UserId == userId)
+				.SingleOrDefaultAsync();
+
+			// Update the users Avatars and Happiness accordingly
+			dbUserHappiness.Add(happinessType, happinessAmount);
+
+			await m_CoreDbContext.UsersBuildings.AddAsync(dbUserBuilding);
+
+			return null;
+		}
+
+	}
 }

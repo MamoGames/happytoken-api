@@ -124,7 +124,11 @@ namespace HappyTokenApi.Controllers
 					if (resultBuyResourceMine != null) return resultBuyResourceMine;
 
                     break;
+				case StoreProductType.O2OProduct:
+                    var result = await this.ReceiveProductForO2OPurchase(userId, (promotedProduct as StoreO2OProduct));
+					if (result != null) return result;
 
+					break;
                 default:
                     return BadRequest("Invalid product type");
             }
@@ -494,9 +498,8 @@ namespace HappyTokenApi.Controllers
 				return BadRequest("User does not have enough resources.");
 			}
 
-            //TODO: handle O2O product purchase
-
-
+            var result = await this.ReceiveProductForO2OPurchase(userId, storeO2OProduct);
+            if (result != null) return result;
 			
             await this.AddStoreProductPurchaseRecord(storeO2OProduct.ProductId);
 
@@ -508,7 +511,7 @@ namespace HappyTokenApi.Controllers
 			return Ok(wallet);
 		}
 
-		protected async Task<IActionResult> ReceiveProductForAvatarPurchase(string userId, AvatarType avatarType)
+        protected async Task<IActionResult> ReceiveProductForAvatarPurchase(string userId, AvatarType avatarType)
 		{
 			// Create the new UserAvatar
 			var dbUserAvatar = new DbUserAvatar()
@@ -644,5 +647,12 @@ namespace HappyTokenApi.Controllers
 			return null;
 		}
 
+		protected async Task<IActionResult> ReceiveProductForO2OPurchase(string userId, StoreO2OProduct storeO2OProduct)
+		{
+            //TODO: handle O2O product purchase
+            await Task.FromResult(0);
+
+			return null;
+		}
 	}
 }

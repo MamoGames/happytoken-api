@@ -106,11 +106,10 @@ namespace HappyTokenApi.Controllers
 			if (cake == null) return BadRequest("Cake not found.");
 
 			var dbUserBakingCake = await m_CoreDbContext.UsersCakes
-				.Where(i => i.UserId == userId && i.IsBaked == true && i.CakeType == cakeType)
-				.SingleAsync();
+				.Where(i => i.UserId == userId && i.IsBaked == false && i.CakeType == cakeType)
+				.SingleOrDefaultAsync();
             
-			// cannot bake the same cake more than one at once
-			if (dbUserBakingCake != null)
+			if (dbUserBakingCake == null)
 			{
 				return BadRequest("Baking cake not found.");
 			}

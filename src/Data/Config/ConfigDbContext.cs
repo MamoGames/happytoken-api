@@ -3,40 +3,48 @@ using HappyTokenApi.Data.Config.Entities;
 using HappyTokenApi.Models;
 using Microsoft.Extensions.Options;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace HappyTokenApi.Data.Config
 {
     public class ConfigDbContext
     {
-        public DbVersions Versions { get; }
+        private readonly ConfigDbSettings m_ConfigDbSettings;
 
-        public DbAppDefaults AppDefaults { get; }
+        public DbVersions Versions { get; private set; }
 
-        public DbUserDefaults UserDefaults { get; }
+        public DbAppDefaults AppDefaults { get; private set; }
 
-        public DbCakes Cakes { get; }
+        public DbUserDefaults UserDefaults { get; private set; }
 
-        public DbAvatars Avatars { get; }
+        public DbCakes Cakes { get; private set; }
 
-        public DbBuildings Buildings { get; }
+        public DbAvatars Avatars { get; private set; }
 
-        public DbStore Store { get; }
+        public DbBuildings Buildings { get; private set; }
+
+        public DbStore Store { get; private set; }
 
         public ConfigDbContext(IOptions<ConfigDbSettings> options)
         {
-            var configDbSettings = options.Value;
+            m_ConfigDbSettings = options.Value;
 
             ArangoDatabase.ChangeSetting(s =>
             {
-                s.Database = configDbSettings.DbName;
-                s.Url = configDbSettings.Url;
-                s.Credential = new NetworkCredential(configDbSettings.UserName, configDbSettings.Password);
-                s.SystemDatabaseCredential = new NetworkCredential(configDbSettings.UserName, configDbSettings.Password);
+                s.Database = m_ConfigDbSettings.DbName;
+                s.Url = m_ConfigDbSettings.Url;
+                s.Credential = new NetworkCredential(m_ConfigDbSettings.UserName, m_ConfigDbSettings.Password);
+                s.SystemDatabaseCredential = new NetworkCredential(m_ConfigDbSettings.UserName, m_ConfigDbSettings.Password);
             });
 
+            RefreshConfig();
+        }
+
+        public void RefreshConfig()
+        {
             using (var db = ArangoDatabase.CreateWithSetting())
             {
-                Versions = db.Document<DbVersions>(configDbSettings.BaseVersion);
+                Versions = db.Document<DbVersions>(m_ConfigDbSettings.BaseVersion);
 
                 AppDefaults = db.Document<DbAppDefaults>(Versions.AppDefaults);
 

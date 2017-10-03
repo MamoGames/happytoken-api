@@ -33,5 +33,14 @@ namespace HappyTokenApi.Controllers
 
             return Ok(appConfig);
         }
+
+        [AllowAnonymous]
+        [HttpGet("refresh", Name = nameof(RefreshConfig))]
+        public IActionResult RefreshConfig()
+        {
+            m_ConfigDbContext.RefreshConfig();
+
+            return Ok($"Config data refreshed at {DateTime.UtcNow}");
+        }
     }
 }

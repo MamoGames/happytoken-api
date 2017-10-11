@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HappyTokenApi.Models
+﻿namespace HappyTokenApi.Models
 {
     public class AppDefaults
     {

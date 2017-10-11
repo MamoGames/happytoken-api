@@ -3,12 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HappyTokenApi.Data.Core.Entities
 {
-    public class DbUserCake : UserCake
+    public class DbUserMessage : UserMessage
     {
         [Key]
-        public string UsersCakeId { get; set; }
-
-        [Required]
-        public string UserId { get; set; }
+        public new string UsersMessageId { get; set; }
     }
 }

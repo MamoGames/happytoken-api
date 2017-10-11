@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
@@ -26,8 +25,6 @@ namespace HappyTokenApi.Models
             if (this.CurrentDate.Date != DateTime.UtcNow.Date)
             {
                 this.ResetRecords();
-
-                System.Diagnostics.Debug.WriteLine("Updated");
 
                 this.CurrentDate = DateTime.UtcNow;
 

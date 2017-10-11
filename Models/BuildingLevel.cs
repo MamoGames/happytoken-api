@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HappyTokenApi.Models
+﻿namespace HappyTokenApi.Models
 {
     public class BuildingLevel
     {

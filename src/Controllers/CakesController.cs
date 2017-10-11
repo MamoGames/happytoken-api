@@ -70,7 +70,7 @@ namespace HappyTokenApi.Controllers
 
 
             // add cake
-            var dbNewCake = new DbUserCakes()
+            var dbNewCake = new DbUserCake()
             {
                 UsersCakeId = Guid.NewGuid().ToString(),
                 UserId = userId,

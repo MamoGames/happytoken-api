@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace HappyTokenApi.Models
 {
-	public class Building
+    public class Building
 	{
 		public BuildingType BuildingType { get; set; }
 

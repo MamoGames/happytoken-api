@@ -35,7 +35,7 @@
         /// <param name="user">User.</param>
         public bool IsVisibleTo(UserLogin user)
         {
-            return this.IsVisible && this.Requirements.IsMet(this.ProductId, user); 
+            return IsVisible && Requirements.IsMet(ProductId, user); 
         }
     }
 }

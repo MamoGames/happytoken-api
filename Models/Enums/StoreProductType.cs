@@ -1,5 +1,3 @@
-using System;
-
 namespace HappyTokenApi.Models
 {
     public enum StoreProductType

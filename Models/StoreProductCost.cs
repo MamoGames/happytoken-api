@@ -16,26 +16,20 @@ namespace HappyTokenApi.Models
         {
             get
             {
-                if (this.Wallet != null)
+                if (Wallet != null)
                 {
-                    if (this.Wallet.Gems > 0) return CurrencyType.Gems;
+                    if (Wallet.Gems > 0) return CurrencyType.Gems;
 
-                    if (this.Wallet.Gold > 0) return CurrencyType.Gold;
+                    if (Wallet.Gold > 0) return CurrencyType.Gold;
 
-                    if (this.Wallet.HappyTokens > 0) return CurrencyType.HappyTokens;
+                    if (Wallet.HappyTokens > 0) return CurrencyType.HappyTokens;
                 }
 
                 return CurrencyType.None;
             }  
         }
 
-        public bool IsIAP
-        {
-            get
-            {
-                return !string.IsNullOrEmpty(this.IAPProductId) && !string.IsNullOrEmpty(this.IAPReferencePrice);
-            }
-        }
+        public bool IsIAP => !string.IsNullOrEmpty(this.IAPProductId) && !string.IsNullOrEmpty(this.IAPReferencePrice);
 
         public bool IsValid
         {
@@ -121,9 +115,7 @@ namespace HappyTokenApi.Models
 
 			if (this.AvatarPiece != null && this.AvatarPiece.Pieces > 0)
 			{
-                if (userAvatars == null) return false;
-
-				var userAvatar = userAvatars.Find(i => i.AvatarType == this.AvatarPiece.AvatarType);
+			    var userAvatar = userAvatars?.Find(i => i.AvatarType == this.AvatarPiece.AvatarType);
 				if (userAvatar == null || userAvatar.Pieces < this.AvatarPiece.Pieces) return false;
 			}
 
@@ -144,9 +136,7 @@ namespace HappyTokenApi.Models
 
                 if (this.AvatarPiece != null && this.AvatarPiece.Pieces > 0)
                 {
-                    if (userAvatars == null) return false;
-
-                    var userAvatar = userAvatars.Find(i => i.AvatarType == this.AvatarPiece.AvatarType);
+                    var userAvatar = userAvatars?.Find(i => i.AvatarType == this.AvatarPiece.AvatarType);
                     if (userAvatar == null) return false;
 
                     userAvatar.Pieces -= this.AvatarPiece.Pieces;
@@ -158,9 +148,6 @@ namespace HappyTokenApi.Models
             return false;
         }
 
-        public override string ToString()
-        {
-            return ((this.Wallet == null || this.Wallet.IsEmpty) ? "" : this.Wallet.ToString()) + ((this.AvatarPiece == null || this.AvatarPiece.Pieces <= 0) ? "" : this.AvatarPiece.AvatarType.ToString() + ":" + this.AvatarPiece.Pieces);
-        }
+        public override string ToString() => (Wallet == null || Wallet.IsEmpty ? "" : Wallet.ToString()) + (AvatarPiece == null || AvatarPiece.Pieces <= 0 ? "" : AvatarPiece.AvatarType + ":" + AvatarPiece.Pieces);
     }
 }

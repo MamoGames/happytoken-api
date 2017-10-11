@@ -64,7 +64,7 @@ namespace HappyTokenApi.Controllers
                 LastSeenDate = DateTime.UtcNow,
                 LastDailyRewardDate = DateTime.UtcNow,
                 GoldMineDaysRemaining = 0,
-                GemMineDaysRemaining = 0, 
+                GemMineDaysRemaining = 0,
                 Level = 0,
                 FriendCount = 0,
             };
@@ -142,12 +142,12 @@ namespace HappyTokenApi.Controllers
                 dbUsersBuildings.Add(userBuilding);
             }
 
-			// Users default DailyActions
-			var dbUserDailyActions = new DBUserDailyActions
-			{
-				UsersDailyActionId = Guid.NewGuid().ToString(),
-				UserId = userId,
-			};
+            // Users default DailyActions
+            var dbUserDailyActions = new DBUserDailyActions
+            {
+                UsersDailyActionId = Guid.NewGuid().ToString(),
+                UserId = userId,
+            };
             dbUserDailyActions.Update();
 
             // Add the new user
@@ -220,14 +220,23 @@ namespace HappyTokenApi.Controllers
                     .Where(i => i.UserId == userId)
                     .ToListAsync();
 
-				var dbUserStorePurchaseRecords = await m_CoreDbContext.UsersStorePurchaseRecords
-					.Where(i => i.UserId == userId)
-					.ToListAsync();
+                var dbUserStorePurchaseRecords = await m_CoreDbContext.UsersStorePurchaseRecords
+                    .Where(i => i.UserId == userId)
+                    .ToListAsync();
 
-				var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
-					.Where(i => i.UserId == userId)
-					.SingleOrDefaultAsync();
-                dbUserDailyActions.Update();
+                var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+                    .Where(i => i.UserId == userId)
+                    .SingleOrDefaultAsync();
+
+                // Update the Daily actions, if we have any
+                dbUserDailyActions?.Update();
+
+                // Clear out any expired messages
+                var expiredMessages = await m_CoreDbContext.UsersMessages
+                    .Where(i => i.ToUserId == userId && i.ExpiryDate > DateTime.UtcNow)
+                    .ToListAsync();
+
+                m_CoreDbContext.UsersMessages.RemoveRange(expiredMessages);
 
                 // Check if we give the players their daily reward
                 var dailyRewards = ProcessDailyReward(dbUserProfile, dbUserWallet);

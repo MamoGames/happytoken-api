@@ -19,11 +19,13 @@ namespace HappyTokenApi.Data.Core
 
         public DbSet<DbUserAvatar> UsersAvatars { get; set; }
 
-        public DbSet<DbUserCakes> UsersCakes { get; set; }
+        public DbSet<DbUserCake> UsersCakes { get; set; }
 
         public DbSet<DbUserStorePurchaseRecord> UsersStorePurchaseRecords { get; set; }
 
         public DbSet<DBUserDailyActions> UsersDailyActions { get; set; }
+
+        public DbSet<DbUserMessage> UsersMessages { get; set; }
 
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
     }

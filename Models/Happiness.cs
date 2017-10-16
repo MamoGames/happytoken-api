@@ -1,9 +1,10 @@
-﻿using System;
-
-namespace HappyTokenApi.Models
+﻿namespace HappyTokenApi.Models
 {
     public class Happiness
     {
+		public const int MaxTotalValue = 1500;
+		public const int MaxValue = 300;
+
         public int Experience { get; set; }
 
         public int Health { get; set; }
@@ -15,6 +16,8 @@ namespace HappyTokenApi.Models
         public int Wealth { get; set; }
 
         public int Total => Wealth + Social + Health + Experience + Skill;
+
+        public float NormalizedTotal => System.Math.Max(System.Math.Min((float)Total/MaxTotalValue, 1), 0);
 
         public void Add(HappinessType happinessType, int amount)
         {

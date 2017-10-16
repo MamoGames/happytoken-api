@@ -1,4 +1,6 @@
-﻿namespace HappyTokenApi.Models
+﻿using System;
+
+namespace HappyTokenApi.Models
 {
     public class StoreProduct
     {
@@ -24,6 +26,8 @@
 
 		public bool IsHighlighted { get; set; }
 
+		public bool IsPromoted { get; set; }
+
 		public StoreProductCost Cost { get; set; }
 
         public StoreProductRequirements Requirements { get; set; }
@@ -35,7 +39,12 @@
         /// <param name="user">User.</param>
         public bool IsVisibleTo(UserLogin user)
         {
-            return IsVisible && Requirements.IsMet(ProductId, user); 
+			return IsVisible && (this.Requirements == null || this.Requirements.IsMet(this.ProductId, user)); 
         }
+
+		public T Clone<T>() where T:StoreProduct
+		{
+			return (T)this.MemberwiseClone();
+		}
     }
 }

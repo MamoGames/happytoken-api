@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace HappyTokenApi.Models
 {
-    public class Building
+	public class Building
 	{
 		public BuildingType BuildingType { get; set; }
 
@@ -15,5 +16,12 @@ namespace HappyTokenApi.Models
 		public AvatarType AvatarTypeAlt { get; set; }
 
 		public List<BuildingLevel> Levels { get; set; }
+
+        public int MaxLevel => Levels.Max(l => l.Level);
+
+        public bool HasReachedMaxLevel(int currentLv = 1)
+		{
+			return MaxLevel == currentLv;		
+		}
 	}
 }

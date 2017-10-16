@@ -31,11 +31,11 @@ namespace HappyTokenApi.Models
         /// <param name="profile">User profile</param>
         public bool IsMet(string ProductID, UserLogin userLogin)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
 			if (this.After != default(DateTime) && now < this.After) return false;
 
-			if (this.Before != default(DateTime) && now > this.Before) return false;
+            if (this.Before != default(DateTime) && now > this.Before) return false;
 
             if (MinLevel > 0 && (userLogin.Profile.Level < MinLevel)) return false;
 

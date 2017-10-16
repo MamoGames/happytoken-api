@@ -30,13 +30,15 @@ namespace HappyTokenApi.Models
 
         public DateTime EndDate { get; set; }
 
-        /// <summary>
-        /// The discounted cost, use PromotedProductID to reference the original product price
-        /// </summary>
-        /// <value>The cost.</value>
-        public StoreProductCost Cost { get; set; }
+        public bool IsDiscounted => !string.IsNullOrEmpty(PromotionText);
 
-        public StoreProduct GetPromotedStoreProduct(Store store)
+		/// <summary>
+		/// The discounted cost, use PromotedProductID to reference the original product price
+		/// </summary>
+		/// <value>The cost.</value>
+		public StoreProductCost Cost { get; set; }
+
+		public StoreProduct GetPromotedStoreProduct(Store store)
         {
             switch (this.StoreProductType)
             {

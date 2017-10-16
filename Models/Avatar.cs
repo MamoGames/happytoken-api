@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HappyTokenApi.Models
 {
@@ -11,5 +13,12 @@ namespace HappyTokenApi.Models
         public HappinessType HappinessType { get; set; }
 
         public List<AvatarLevel> Levels { get; set; }
+
+        public int MaxLevel => Levels.Max(l => l.Level);
+
+        public bool HasReachedMaxLevel(int currentLv = 1)
+		{
+			return MaxLevel == currentLv;
+		}
     }
 }

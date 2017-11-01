@@ -47,5 +47,7 @@ namespace HappyTokenApi.Models
         public CakeType PinkyCakeType { get; set; }
 
         public int PinkyCakes { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

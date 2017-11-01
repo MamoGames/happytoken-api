@@ -33,80 +33,66 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbUsersMessages = await m_CoreDbContext.UsersMessages
-                .Where(i => i.ToUserId == userId)
+                .Where(i => i.ToUserId == userId && ! i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
                 .ToListAsync();
-
-            // Clear out any expired messages
-            var expiredMessages = dbUsersMessages
-                .Where(i => i.ExpiryDate <= DateTime.UtcNow)
-                .ToList();
-
-            if (expiredMessages.Count > 0)
-            {
-                m_CoreDbContext.UsersMessages.RemoveRange(expiredMessages);
-
-                await m_CoreDbContext.SaveChangesAsync();
-            }
-
-            foreach (var item in expiredMessages) dbUsersMessages.Remove(item);
 
             var result = dbUsersMessages.OfType<UserMessage>().ToList();
 
             return Ok(result);
         }
 
-        [Authorize]
-        [HttpPost("cake", Name = nameof(SendCakeMessage))]
-        public async Task<IActionResult> SendCakeMessage([FromBody] UserSendCakeMessage sendCakeMessage)
-        {
-            var userId = this.GetClaimantUserId();
-            var toUserId = sendCakeMessage.ToUserId;
-            var cakeType = sendCakeMessage.CakeType;
+        //[Authorize]
+        //[HttpPost("cake", Name = nameof(SendCakeMessage))]
+        //public async Task<IActionResult> SendCakeMessage([FromBody] UserSendCakeMessage sendCakeMessage)
+        //{
+        //    var userId = this.GetClaimantUserId();
+        //    var toUserId = sendCakeMessage.ToUserId;
+        //    var cakeType = sendCakeMessage.CakeType;
 
-            if (!this.IsValidUserId(userId))
-            {
-                return BadRequest("UserId is invalid.");
-            }
+        //    if (!this.IsValidUserId(userId))
+        //    {
+        //        return BadRequest("UserId is invalid.");
+        //    }
 
-            var dbUserProfile = await m_CoreDbContext.UsersProfiles
-                .Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
+        //    var dbUserProfile = await m_CoreDbContext.UsersProfiles
+        //        .Where(i => i.UserId == userId)
+        //        .SingleOrDefaultAsync();
 
-            if (dbUserProfile == null)
-            {
-                return BadRequest("Could not find sender user.");
-            }
+        //    if (dbUserProfile == null)
+        //    {
+        //        return BadRequest("Could not find sender user.");
+        //    }
 
-            // Have we already sent a cake to this user 
-            var isAlreadySent = await m_CoreDbContext.UsersMessages
-                .Where(i => i.ToUserId == toUserId && i.FromUserId == userId && i.MessageType == MessageType.GiftCake)
-                .AnyAsync();
+        //    // Have we already sent a cake to this user 
+        //    var isAlreadySent = await m_CoreDbContext.UsersMessages
+        //        .Where(i => i.ToUserId == toUserId && i.FromUserId == userId && i.MessageType == MessageType.GiftCake)
+        //        .AnyAsync();
 
-            if (isAlreadySent)
-            {
-                return BadRequest("Cake already sent to this user!");
-            }
+        //    if (isAlreadySent)
+        //    {
+        //        return BadRequest("Cake already sent to this user!");
+        //    }
 
-            // TODO: Add more logic to decide if player can donate a cake to this user
-            //var isCakeAvailable = await m_CoreDbContext.UsersCakes
-            //    .Where(i => i.UserId == userId && i.CakeType == cakeType)
-            //    .AnyAsync();
+        //    // TODO: Add more logic to decide if player can donate a cake to this user
+        //    //var isCakeAvailable = await m_CoreDbContext.UsersCakes
+        //    //    .Where(i => i.UserId == userId && i.CakeType == cakeType)
+        //    //    .AnyAsync();
 
-            //if (!isCakeAvailable)
-            //{
-            //    return BadRequest("Sorry, you don't have enough cakes to send to this user.");
-            //}
+        //    //if (!isCakeAvailable)
+        //    //{
+        //    //    return BadRequest("Sorry, you don't have enough cakes to send to this user.");
+        //    //}
 
-            var dbUserMessage = CreateCakeMessage(userId, dbUserProfile.Name, toUserId, cakeType);
+        //    var dbUserMessage = CreateCakeMessage(userId, dbUserProfile.Name, toUserId, cakeType);
 
-            await m_CoreDbContext.UsersMessages.AddAsync(dbUserMessage);
+        //    await m_CoreDbContext.UsersMessages.AddAsync(dbUserMessage);
 
-            await m_CoreDbContext.SaveChangesAsync();
+        //    await m_CoreDbContext.SaveChangesAsync();
 
-            var result = (UserMessage) dbUserMessage;
+        //    var result = (UserMessage) dbUserMessage;
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
         [Authorize]
         [HttpGet("cake/{userMessageId}", Name = nameof(ClaimCakeMessage))]
@@ -132,6 +118,13 @@ namespace HappyTokenApi.Controllers
             {
                 return BadRequest("This message cannot be used to claim cakes.");
             }
+
+            if (dbUserMessage.IsDeleted)
+            {
+                return BadRequest("The message is already deleted.");
+            }
+
+            //TODO: check inventory for space
 
             var dbNewCake = new DbUserCake()
             {
@@ -178,7 +171,34 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Cannot delete other users messages.");
             }
 
-            m_CoreDbContext.UsersMessages.Remove(dbUserMessage);
+            dbUserMessage.IsDeleted = true;
+
+            await m_CoreDbContext.SaveChangesAsync();
+
+            return await GetMessages();
+        }
+
+        [Authorize]
+        [HttpPost("read", Name = nameof(ReadMessage))]
+        public async Task<IActionResult> ReadMessage([FromBody] string userMessageId)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            var dbUserMessage = await m_CoreDbContext.UsersMessages
+                .Where(i => i.UsersMessageId == userMessageId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserMessage.ToUserId != userId)
+            {
+                return BadRequest("Cannot read other users messages.");
+            }
+
+            dbUserMessage.IsRead = true;
 
             await m_CoreDbContext.SaveChangesAsync();
 

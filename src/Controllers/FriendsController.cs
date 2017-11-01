@@ -323,18 +323,13 @@ namespace HappyTokenApi.Controllers
 
 		[Authorize]
 		[HttpPost("giftcake", Name = nameof(GiftCakeToFriend))]
-		public async Task<IActionResult> GiftCakeToFriend([FromBody] string friendUserId)
+        public async Task<IActionResult> GiftCakeToFriend([FromBody] UserSendCakeMessage sendCakeMessage)
 		{
+            var friendUserId = sendCakeMessage.ToUserId;
 			if (string.IsNullOrEmpty(friendUserId))
 			{
 				return BadRequest("Friend UserId was invalid.");
 			}
-
-			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
-			//if (this.IsValidUserId(friendUserId))
-			//{
-			//    return Forbid("Friend UserId is not valid.");
-			//}
 
 			var userId = this.GetClaimantUserId();
 
@@ -372,7 +367,9 @@ namespace HappyTokenApi.Controllers
 				.Where(i => i.UserId == userId)
 				.SingleOrDefaultAsync();
 
-            // TODO: make it a message based gifting. There is no messaging function yet so we do it instantly. 
+            // create the message for friend for receiving
+            var dbUserMessage = MessagesController.CreateCakeMessage(userId, dbUserProfile.Name, friendUserId, sendCakeMessage.CakeType);
+            await m_CoreDbContext.UsersMessages.AddAsync(dbUserMessage);
 
             if (dbUserHappiness == null) return BadRequest("User happiness is not found.");
 

@@ -36,6 +36,19 @@ namespace HappyTokenApi.Controllers
                 .Where(i => i.ToUserId == userId)
                 .ToListAsync();
 
+            // Clear out any expired messages
+            var expiredMessages = dbUsersMessages
+                .Where(i => i.ExpiryDate <= DateTime.UtcNow)
+                .ToList();
+
+            if (expiredMessages.Count > 0)
+            {
+                m_CoreDbContext.UsersMessages.RemoveRange(expiredMessages);
+
+                await m_CoreDbContext.SaveChangesAsync();
+            }
+
+            foreach (var item in expiredMessages) dbUsersMessages.Remove(item);
 
             var result = dbUsersMessages.OfType<UserMessage>().ToList();
 
@@ -66,7 +79,7 @@ namespace HappyTokenApi.Controllers
 
             // Have we already sent a cake to this user 
             var isAlreadySent = await m_CoreDbContext.UsersMessages
-                .Where(i => i.ToUserId == toUserId && i.FromUserId == userId && i.MessageType == MessageType.Cake)
+                .Where(i => i.ToUserId == toUserId && i.FromUserId == userId && i.MessageType == MessageType.GiftCake)
                 .AnyAsync();
 
             if (isAlreadySent)
@@ -115,7 +128,7 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("Cannot delete other users messages.");
             }
 
-            if (dbUserMessage.MessageType != MessageType.Cake)
+            if (dbUserMessage.MessageType != MessageType.GiftCake)
             {
                 return BadRequest("This message cannot be used to claim cakes.");
             }
@@ -172,12 +185,12 @@ namespace HappyTokenApi.Controllers
             return await GetMessages();
         }
 
-        private DbUserMessage CreateCakeMessage(string fromUserId, string fromUserName, string toUserId, CakeType cakeType)
+        public static DbUserMessage CreateCakeMessage(string fromUserId, string fromUserName, string toUserId, CakeType cakeType)
         {
             var userMessage = new DbUserMessage
             {
                 UsersMessageId = Guid.NewGuid().ToString(),
-                MessageType = MessageType.Cake,
+                MessageType = MessageType.GiftCake,
                 FromUserId = fromUserId,
                 ToUserId = toUserId,
                 PinkyCakeType = cakeType,

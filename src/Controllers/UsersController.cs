@@ -231,13 +231,6 @@ namespace HappyTokenApi.Controllers
                 // Update the Daily actions, if we have any
                 dbUserDailyActions?.Update();
 
-                // Clear out any expired messages
-                var expiredMessages = await m_CoreDbContext.UsersMessages
-                    .Where(i => i.ToUserId == userId && i.ExpiryDate <= DateTime.UtcNow)
-                    .ToListAsync();
-
-                m_CoreDbContext.UsersMessages.RemoveRange(expiredMessages);
-
                 // Check if we give the players their daily reward
                 var dailyRewards = ProcessDailyReward(dbUserProfile, dbUserWallet);
 

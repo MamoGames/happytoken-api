@@ -4,11 +4,11 @@ namespace HappyTokenApi.Models
 {
     public enum MessageType
     {
-        News,
+        News = 1,
         Campaign,
         System,
-        Quest,
-        Cake,
+        QuestRewards,
+        GiftCake,
         Friend,
         O2O,
     }

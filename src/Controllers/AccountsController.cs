@@ -89,5 +89,48 @@ namespace HappyTokenApi.Controllers
 
             return BadRequest("Could not link email to user.");
         }
+
+        [Authorize]
+        [HttpPost("updatename", Name = nameof(UpdateName))]
+        public async Task<IActionResult> UpdateName([FromBody] string name)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            name = name?.Trim();
+
+            //TODO: perform more name check
+
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("User name is required.");
+            }
+
+            // Pull the users data from the DB
+            var dbUser = await m_CoreDbContext.UsersProfiles
+                .Where(dbu => dbu.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            if (dbUser != null)
+            {
+                dbUser.Name = name;
+
+                await m_CoreDbContext.SaveChangesAsync();
+
+                var response = new RequestResult
+                {
+                    Content = "Successfully updated name.",
+                    StatusCode = 0
+                };
+
+                return Ok(response);
+            }
+
+            return BadRequest("Could not update nanme.");
+        }
     }
 }

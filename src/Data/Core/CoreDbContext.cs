@@ -27,6 +27,8 @@ namespace HappyTokenApi.Data.Core
 
         public DbSet<DbUserMessage> UsersMessages { get; set; }
 
+        public DbSet<DbUserMessagesStatus> UsersMessagesStatus { get; set; }
+
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
     }
 }

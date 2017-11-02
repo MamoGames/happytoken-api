@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HappyTokenApi.Models
 {
@@ -18,6 +19,8 @@ namespace HappyTokenApi.Models
 
         public string Body { get; set; }
 
+        // the data is now stored in UsersMessagesStatus table in order to support shared message
+        [NotMapped]
         public bool IsRead { get; set; }
 
         public DateTime ExpiryDate { get; set; }

@@ -23,5 +23,19 @@ namespace HappyTokenApi.Models
         public int FriendCount { get; set; }
 
         public int CakeDonated { get; set; }
+
+        /// <summary>
+        /// Gain XP
+        /// </summary>
+        /// <returns><c>true</c>, if level up, <c>false</c> otherwise.</returns>
+        /// <param name="xp">Xp.</param>
+        public bool AddXp(int xp)
+        {
+            this.Xp += xp;
+
+            // TODO: check level hp
+
+            return false;
+        }
     }
 }

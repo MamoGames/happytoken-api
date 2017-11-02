@@ -74,7 +74,7 @@ namespace HappyTokenApi.Controllers
 
             if (dbUserMessage.ToUserId != userId)
             {
-                return BadRequest("Cannot delete other users messages.");
+                return BadRequest("Cannot calim other users messages.");
             }
 
             if (dbUserMessage.MessageType != MessageType.GiftCake)
@@ -113,6 +113,80 @@ namespace HappyTokenApi.Controllers
 
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpGet("rewards/{userMessageId}", Name = nameof(ClaimMessageRewards))]
+        public async Task<IActionResult> ClaimMessageRewards(string userMessageId)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            var dbUserMessage = await m_CoreDbContext.UsersMessages
+                .Where(i => i.UsersMessageId == userMessageId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserMessage.ToUserId != userId)
+            {
+                return BadRequest("Cannot claim other users messages.");
+            }
+
+            if (dbUserMessage.MessageType != MessageType.QuestRewards)
+            {
+                return BadRequest("This message cannot be used to claim rewards.");
+            }
+
+            if (dbUserMessage.IsDeleted)
+            {
+                return BadRequest("The message is already deleted.");
+            }
+
+            var dbUserWallet = await m_CoreDbContext.UsersWallets
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserWallet == null)
+            {
+                return BadRequest("Could not find Users Wallet.");
+            }
+
+            if (dbUserMessage.Gems > 0 || dbUserMessage.Gold > 0 || dbUserMessage.HappyTokens > 0)
+            {
+                dbUserWallet.Gems += dbUserMessage.Gems;
+                dbUserWallet.Gold += dbUserMessage.Gold;
+                dbUserWallet.HappyTokens += dbUserMessage.HappyTokens;
+            }
+
+            if (dbUserMessage.Xp > 0)
+            {
+                var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+                if (dbUserProfile == null)
+                {
+                    return BadRequest("Could not find user profile.");
+                }
+
+                dbUserProfile.AddXp(dbUserMessage.Xp);
+            }
+
+            //TODO: check inventory and item rewards
+
+
+            await m_CoreDbContext.SaveChangesAsync();
+
+            await DeleteMessage(userMessageId);
+
+            // Send the updated Wallet back to the user
+            var wallet = (Wallet)dbUserWallet;
+
+            return Ok(wallet);
+        }
+
 
         [Authorize]
         [HttpPost("delete", Name = nameof(DeleteMessage))]

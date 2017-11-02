@@ -33,7 +33,7 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbUsersMessages = await m_CoreDbContext.UsersMessages
-                .Where(i => i.ToUserId == userId && ! i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
+                .Where(i => (i.ToUserId == null || i.ToUserId == userId) && ! i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
                 .ToListAsync();
 
             // get message status for adding status flags
@@ -129,6 +129,7 @@ namespace HappyTokenApi.Controllers
                 .Where(i => i.UsersMessageId == userMessageId)
                 .SingleOrDefaultAsync();
 
+            // can only delete messageds that target the user
             if (dbUserMessage.ToUserId != userId)
             {
                 return BadRequest("Cannot delete other users messages.");

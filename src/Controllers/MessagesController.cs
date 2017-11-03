@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace HappyTokenApi.Controllers
 {
@@ -42,6 +43,7 @@ namespace HappyTokenApi.Controllers
 
             if (dbUserMessageStatus != null)
             {
+                // change status value that is not from the individual record table
                 foreach (var message in dbUsersMessages)
                 {
                     if (dbUserMessageStatus.ReadMessageIds.Contains(message.UsersMessageId)) {
@@ -49,7 +51,11 @@ namespace HappyTokenApi.Controllers
                     }
                 }
 
-                // TODO: clean up message ID that is no longer needed
+                // clean up ids that are no longer exist
+                if (dbUserMessageStatus.CleanUp(dbUsersMessages.Select(i => i.UsersMessageId).ToList()))
+                {
+                    await m_CoreDbContext.SaveChangesAsync();
+                }
             }
 
             var result = dbUsersMessages.OfType<UserMessage>().ToList();

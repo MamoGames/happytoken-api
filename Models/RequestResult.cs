@@ -7,5 +7,7 @@ namespace HappyTokenApi.Models
         public string Content { get; set; }
 
         public int StatusCode { get; set; }
+
+        public RecordData[] Data { get; set; }
     }
 }

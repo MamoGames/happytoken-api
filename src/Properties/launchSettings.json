@@ -15,6 +15,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchUrl": "ping",
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -23,6 +24,7 @@
     "HappyTokenApi": {
       "commandName": "IISExpress",
       "launchUrl": "ping",
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

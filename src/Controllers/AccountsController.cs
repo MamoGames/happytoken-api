@@ -5,17 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using HappyTokenApi.Data.Config;
 
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class AccountsController : Controller
+    public class AccountsController : DataController
     {
-        private readonly CoreDbContext m_CoreDbContext;
-
-        public AccountsController(CoreDbContext coreDbContext)
+        public AccountsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            m_CoreDbContext = coreDbContext;
         }
 
         [AllowAnonymous]
@@ -148,8 +146,12 @@ namespace HappyTokenApi.Controllers
                     },
                 };
 
-                return Ok(response);
+                this.AddDataToReturnList("cake", await this.DataCake());
+
+                return this.RequestResult(0, "Done");
             }
+
+           
 
             return BadRequest("Could not update nanme.");
         }

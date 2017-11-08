@@ -29,7 +29,7 @@ namespace HappyTokenApi.Controllers
             this.updatedDataRecords = new List<RecordData>();
         }
 
-        protected void AddDataToReturnList(string key, object obj) 
+        protected void AddDataToReturnList(string key, object obj)
         {
             // TODO: remove existing record data with the same key
 
@@ -41,7 +41,12 @@ namespace HappyTokenApi.Controllers
             });
         }
 
-        protected IActionResult RequestResult(int statusCode, object content) 
+        protected void ClearDataInReturnList()
+        {
+            this.updatedDataRecords.Clear();
+        }
+
+        protected IActionResult RequestResult(int statusCode, object content)
         {
             return Ok(new RequestResult
             {

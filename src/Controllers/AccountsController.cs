@@ -119,39 +119,10 @@ namespace HappyTokenApi.Controllers
 
                 await m_CoreDbContext.SaveChangesAsync();
 
-                var cake = new Cake
-                {
-                    Gold = 10,
-                };
-
-                System.IO.MemoryStream stream1 = new System.IO.MemoryStream();
-                System.Runtime.Serialization.Json.DataContractJsonSerializer ser = new System.Runtime.Serialization.Json.DataContractJsonSerializer(cake.GetType());  
-                ser.WriteObject(stream1, cake);  
-                stream1.Position = 0;
-                System.IO.StreamReader sr = new System.IO.StreamReader(stream1);
-
-                var cakeData = sr.ReadToEnd();
-
-
-                var response = new RequestResult
-                {
-                    Content = "Successfully updated name.",
-                    StatusCode = 0,
-                    Data = new RecordData[] {
-                        new RecordData {
-                            Key = "cake",
-                            Hash = "123",
-                            Data = cakeData,
-                        },
-                    },
-                };
-
-                this.AddDataToReturnList("cake", await this.DataCake());
-
                 return this.RequestResult(0, "Done");
             }
 
-           
+
 
             return BadRequest("Could not update nanme.");
         }

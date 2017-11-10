@@ -96,31 +96,52 @@ namespace HappyTokenApi.Controllers
             {
                 case StoreProductType.Avatar:
                     var resultBuyAvatar = await this.ReceiveProductForAvatarPurchase(userId, (promotedProduct as StoreAvatar).AvatarType);
-                    if (resultBuyAvatar != null) return resultBuyAvatar;
+                    if (resultBuyAvatar != null)
+                    {
+                        this.AddDataToReturnList(await this.GetStatus());
+                        return RequestResult(resultBuyAvatar);
+                    }
 
                     break;
                 case StoreProductType.AvatarUpgrade:
                     return BadRequest("Not supported.");
                 case StoreProductType.Building:
                     var resultBuyBuilding = await this.ReceiveProductForBuildingPurchase(userId, (promotedProduct as StoreBuilding).BuildingType);
-                    if (resultBuyBuilding != null) return resultBuyBuilding;
+                    if (resultBuyBuilding != null)
+                    {
+                        this.AddDataToReturnList(await this.GetStatus());
+                        return RequestResult(resultBuyBuilding);
+                    }
 
                     break;
                 case StoreProductType.BuildingUpgrade:
                     return BadRequest("Not supported.");
                 case StoreProductType.CurrencySpot:
                     var resultBuyCurrencySpot = await this.ReceiveProductForCurrencySpot(userId, dbUserWallet, (promotedProduct as StoreCurrencySpot));
-                    if (resultBuyCurrencySpot != null) return resultBuyCurrencySpot;
+                    if (resultBuyCurrencySpot != null)
+                    {
+                        this.AddDataToReturnList(await this.GetStatus());
+                        return RequestResult(resultBuyCurrencySpot);
+                    }
+
 
                     break;
                 case StoreProductType.ResourceMine:
                     var resultBuyResourceMine = await this.ReceiveProductForResourceMine(userId, (promotedProduct as ResourceMine));
-                    if (resultBuyResourceMine != null) return resultBuyResourceMine;
+                    if (resultBuyResourceMine != null)
+                    {
+                        this.AddDataToReturnList(await this.GetStatus());
+                        return RequestResult(resultBuyResourceMine);
+                    }
 
                     break;
                 case StoreProductType.O2OProduct:
                     var result = await this.ReceiveProductForO2OPurchase(userId, (promotedProduct as StoreO2OProduct));
-                    if (result != null) return result;
+                    if (result != null)
+                    {
+                        this.AddDataToReturnList(await this.GetStatus());
+                        return RequestResult(result);
+                    }
 
                     break;
                 default:
@@ -171,7 +192,11 @@ namespace HappyTokenApi.Controllers
             }
 
             var result = await this.ReceiveProductForResourceMine(userId, resourceMine);
-            if (result != null) return result;
+            if (result != null)
+            {
+                this.AddDataToReturnList(await this.GetStatus());
+                return RequestResult(result);
+            }
 
             await this.AddStoreProductPurchaseRecord(resourceMine.ProductId);
 
@@ -217,7 +242,11 @@ namespace HappyTokenApi.Controllers
             }
 
             var result = await this.ReceiveProductForCurrencySpot(userId, dbUserWallet, storeCurrencySpot);
-            if (result != null) return result;
+            if (result != null)
+            {
+                this.AddDataToReturnList(await this.GetStatus());
+                return RequestResult(result);
+            }
 
             await this.AddStoreProductPurchaseRecord(storeCurrencySpot.ProductId);
 
@@ -275,7 +304,11 @@ namespace HappyTokenApi.Controllers
             }
 
             var result = await this.ReceiveProductForAvatarPurchase(userId, avatarType);
-            if (result != null) return result;
+            if (result != null)
+            {
+                this.AddDataToReturnList(await this.GetStatus());
+                return RequestResult(result);
+            }
 
             await this.AddStoreProductPurchaseRecord(dbAvatar.ProductId);
 
@@ -493,7 +526,11 @@ namespace HappyTokenApi.Controllers
             }
 
             var result = await this.ReceiveProductForO2OPurchase(userId, storeO2OProduct);
-            if (result != null) return result;
+            if (result != null)
+            {
+                this.AddDataToReturnList(await this.GetStatus());
+                return RequestResult(result);
+            }
 
             await this.AddStoreProductPurchaseRecord(storeO2OProduct.ProductId);
 

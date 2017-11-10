@@ -108,7 +108,7 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User name is required.");
             }
 
-            this.AddDataToReturnList(await this.Status());
+            this.AddDataToReturnList(await this.GetStatus());
 
             // Pull the users data from the DB
             var dbUser = await m_CoreDbContext.UsersProfiles

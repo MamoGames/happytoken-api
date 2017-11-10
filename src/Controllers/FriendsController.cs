@@ -58,83 +58,6 @@ namespace HappyTokenApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("", Name = nameof(GetFriends))]
-        public async Task<IActionResult> GetFriends()
-        {
-            var userId = this.GetClaimantUserId();
-
-            // TODO: Change to join 
-            // var results = (from p in persons
-            //    join l in Location on p.PersonId equals l.PersonId
-            //    where searchIds.Contains(l.Id)
-            //    select p).Distinct().ToList();
-
-            var dbUsersFriends = await m_CoreDbContext.UsersFriends
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            if (dbUsersFriends?.Count == 0)
-            {
-                return RequestResult(new List<FriendInfo>());
-            }
-
-            var dbUserProfiles = await (from usersProfile in m_CoreDbContext.UsersProfiles
-                                        join usersFriend in m_CoreDbContext.UsersFriends on usersProfile.UserId equals usersFriend.FriendUserId
-                                        where usersFriend.UserId == userId
-                                        select usersProfile).ToListAsync();
-
-            var dbUserHappiness = await (from usersHappiness in m_CoreDbContext.UsersHappiness
-                                         join usersFriend in m_CoreDbContext.UsersFriends on usersHappiness.UserId equals usersFriend.FriendUserId
-                                         where usersFriend.UserId == userId
-                                         select usersHappiness).ToListAsync();
-
-
-            var friends = new List<FriendInfo>();
-
-            foreach (var dbUserFriend in dbUsersFriends)
-            {
-                var friend = new FriendInfo
-                {
-                    UserId = dbUserFriend.UserId,
-                    FriendUserId = dbUserFriend.FriendUserId,
-                    LastVisitDate = dbUserFriend.LastVisitDate,
-                };
-
-                var profile = dbUserProfiles.Find(i => i.UserId == dbUserFriend.FriendUserId);
-
-                if (profile != null)
-                {
-                    friend.Level = profile.Level;
-                    friend.Name = profile.Name;
-                    friend.LastSeenDate = profile.LastSeenDate;
-                    friend.CakeDonated = profile.CakeDonated;
-                }
-
-                var happiness = dbUserHappiness.Find(i => i.UserId == dbUserFriend.FriendUserId);
-
-                if (happiness != null)
-                {
-                    friend.Happiness = happiness;
-                }
-
-                var dbUserAvatars = await m_CoreDbContext.UsersAvatars
-                    .Where(i => i.UserId == dbUserFriend.FriendUserId)
-                    .ToListAsync();
-
-                var dbUserBuildings = await m_CoreDbContext.UsersBuildings
-                    .Where(i => i.UserId == dbUserFriend.FriendUserId)
-                    .ToListAsync();
-
-                friend.UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList();
-                friend.UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList();
-
-                friends.Add(friend);
-            }
-
-            return RequestResult(friends);
-        }
-
-        [Authorize]
         [HttpPost("", Name = nameof(AddFriendByUserId))]
         public async Task<IActionResult> AddFriendByUserId([FromBody] string friendUserId)
         {
@@ -213,8 +136,10 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
+            this.AddDataToReturnList(await this.GetFriends());
+
             // Grab the entire (updated) list of friends, and return to the user
-            return await GetFriends();
+            return RequestResult("");
         }
 
         [Authorize]
@@ -275,7 +200,8 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             // Grab the entire (updated) list of friends, and return to the user
-            return await GetFriends();
+            this.AddDataToReturnList(await this.GetFriends());
+            return RequestResult("");
         }
 
         [Authorize]
@@ -374,7 +300,9 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            return RequestResult(dbUserDailyActions as UserDailyActions);
+            this.AddDataToReturnList(await this.GetStatus());
+
+            return RequestResult("");
         }
 
         [Authorize]
@@ -437,7 +365,9 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            return RequestResult(dbUserDailyActions);
+            this.AddDataToReturnList(await this.GetStatus());
+
+            return RequestResult("");
         }
     }
 }

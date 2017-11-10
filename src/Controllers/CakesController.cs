@@ -78,6 +78,8 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
+            this.AddDataToReturnList(await this.GetStatus());
+
             var newCake = (UserCake)dbNewCake;
 
             return RequestResult(newCake);
@@ -122,6 +124,8 @@ namespace HappyTokenApi.Controllers
             dbUserBakingCake.IsBaked = true;
 
             await m_CoreDbContext.SaveChangesAsync();
+
+            this.AddDataToReturnList(await this.GetStatus());
 
             var bakingCake = (UserCake)dbUserBakingCake;
 

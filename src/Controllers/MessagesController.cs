@@ -20,48 +20,6 @@ namespace HappyTokenApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("", Name = nameof(GetMessages))]
-        public async Task<IActionResult> GetMessages()
-        {
-            var userId = this.GetClaimantUserId();
-
-            if (!this.IsValidUserId(userId))
-            {
-                return BadRequest("UserId is invalid.");
-            }
-
-            var dbUsersMessages = await m_CoreDbContext.UsersMessages
-                .Where(i => (i.ToUserId == null || i.ToUserId == userId) && !i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
-                .ToListAsync();
-
-            // get message status for adding status flags
-            var dbUserMessageStatus = await m_CoreDbContext.UsersMessagesStatus.Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
-
-            if (dbUserMessageStatus != null)
-            {
-                // change status value that is not from the individual record table
-                foreach (var message in dbUsersMessages)
-                {
-                    if (dbUserMessageStatus.ReadMessageIds.Contains(message.UsersMessageId))
-                    {
-                        message.IsRead = true;
-                    }
-                }
-
-                // clean up ids that are no longer exist
-                if (dbUserMessageStatus.CleanUp(dbUsersMessages.Select(i => i.UsersMessageId).ToList()))
-                {
-                    await m_CoreDbContext.SaveChangesAsync();
-                }
-            }
-
-            var result = dbUsersMessages.OfType<UserMessage>().ToList();
-
-            return RequestResult(result);
-        }
-
-        [Authorize]
         [HttpGet("cake/{userMessageId}", Name = nameof(ClaimCakeMessage))]
         public async Task<IActionResult> ClaimCakeMessage(string userMessageId)
         {
@@ -217,7 +175,9 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            return await GetMessages();
+            this.AddDataToReturnList(await this.GetMessages());
+
+            return RequestResult("");
         }
 
         [Authorize]
@@ -254,7 +214,9 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            return await GetMessages();
+            this.AddDataToReturnList(await this.GetMessages());
+
+            return RequestResult("");
         }
 
         public static DbUserMessage CreateCakeMessage(string fromUserId, string fromUserName, string toUserId, CakeType cakeType)

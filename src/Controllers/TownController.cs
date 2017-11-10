@@ -48,6 +48,8 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
+            this.AddDataToReturnList(await this.GetStatus());
+
             // Send the updated buildings back to the user
             return RequestResult(dbUserBuildings.OfType<UserBuilding>().ToList());
         }

@@ -13,33 +13,27 @@ using System.Collections.Generic;
 
 namespace HappyTokenApi.Controllers
 {
-	[Route("[controller]")]
-	public class TownController : Controller
-	{
-		private readonly CoreDbContext m_CoreDbContext;
+    [Route("[controller]")]
+    public class TownController : DataController
+    {
+        public TownController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
+        {
+        }
 
-		private readonly ConfigDbContext m_ConfigDbContext;
+        [Authorize]
+        [HttpPost("buildingsupdate", Name = nameof(UpdateUserBuildings))]
+        public async Task<IActionResult> UpdateUserBuildings([FromBody] List<UserBuilding> userBuildings)
+        {
+            var userId = this.GetClaimantUserId();
 
-		public TownController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
-		{
-			m_CoreDbContext = coreDbContext;
-			m_ConfigDbContext = configDbContext;
-		}
-
-		[Authorize]
-		[HttpPost("buildingsupdate", Name = nameof(UpdateUserBuildings))]
-		public async Task<IActionResult> UpdateUserBuildings([FromBody] List<UserBuilding> userBuildings)
-		{
-			var userId = this.GetClaimantUserId();
-
-			if (!this.IsValidUserId(userId))
-			{
-				return BadRequest("UserId is invalid.");
-			}
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
 
             var dbUserBuildings = await m_CoreDbContext.UsersBuildings
-				.Where(i => i.UserId == userId)
-				.ToListAsync();
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
 
             foreach (var userBuilding in userBuildings)
             {
@@ -52,10 +46,10 @@ namespace HappyTokenApi.Controllers
                 }
             }
 
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
-			// Send the updated buildings back to the user
-			return Ok(dbUserBuildings.OfType<UserBuilding>().ToList());
-		}
-	}
+            // Send the updated buildings back to the user
+            return RequestResult(dbUserBuildings.OfType<UserBuilding>().ToList());
+        }
+    }
 }

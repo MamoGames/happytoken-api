@@ -13,29 +13,23 @@ using System.Collections.Generic;
 
 namespace HappyTokenApi.Controllers
 {
-	[Route("[controller]")]
-	public class CakesController : Controller
-	{
-		private readonly CoreDbContext m_CoreDbContext;
+    [Route("[controller]")]
+    public class CakesController : DataController
+    {
+        public CakesController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
+        {
+        }
 
-		private readonly ConfigDbContext m_ConfigDbContext;
+        [Authorize]
+        [HttpPost("bake", Name = nameof(BakeCake))]
+        public async Task<IActionResult> BakeCake([FromBody] CakeType cakeType)
+        {
+            var userId = this.GetClaimantUserId();
 
-		public CakesController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
-		{
-			m_CoreDbContext = coreDbContext;
-			m_ConfigDbContext = configDbContext;
-		}
-
-		[Authorize]
-		[HttpPost("bake", Name = nameof(BakeCake))]
-		public async Task<IActionResult> BakeCake([FromBody] CakeType cakeType)
-		{
-			var userId = this.GetClaimantUserId();
-
-			if (!this.IsValidUserId(userId))
-			{
-				return BadRequest("UserId is invalid.");
-			}
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
 
             // get the cake config
             var cake = m_ConfigDbContext.Cakes.Cakes.Find(i => i.CakeType == cakeType);
@@ -43,8 +37,8 @@ namespace HappyTokenApi.Controllers
             if (cake == null) return BadRequest("Cake not found.");
 
             var dbUserBakingCakes = await m_CoreDbContext.UsersCakes
-				.Where(i => i.UserId == userId && i.IsBaked == false)
-				.ToListAsync();
+                .Where(i => i.UserId == userId && i.IsBaked == false)
+                .ToListAsync();
 
             var dbUserBakingCake = dbUserBakingCakes.Find(i => i.CakeType == cakeType);
 
@@ -54,13 +48,13 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("The cake is already baking.");
             }
 
-			// TODO: check max concurrenct bake
+            // TODO: check max concurrenct bake
 
 
-			// check cost
-			var dbUserWallet = await m_CoreDbContext.UsersWallets
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            // check cost
+            var dbUserWallet = await m_CoreDbContext.UsersWallets
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
             if (dbUserWallet == null) return BadRequest("User wallet not found.");
 
@@ -78,45 +72,45 @@ namespace HappyTokenApi.Controllers
                 IsBaked = false,
                 BakedDate = DateTime.UtcNow,
                 Value = cake.Value,          // TODO: change cake value base on criterias
-			};
+            };
 
-			await m_CoreDbContext.UsersCakes.AddAsync(dbNewCake);
-			
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.UsersCakes.AddAsync(dbNewCake);
+
+            await m_CoreDbContext.SaveChangesAsync();
 
             var newCake = (UserCake)dbNewCake;
 
-            return Ok(newCake);
-		}
+            return RequestResult(newCake);
+        }
 
-		[Authorize]
-		[HttpPost("finishbake", Name = nameof(FinishBakeCake))]
-		public async Task<IActionResult> FinishBakeCake([FromBody] CakeType cakeType)
-		{
-			var userId = this.GetClaimantUserId();
+        [Authorize]
+        [HttpPost("finishbake", Name = nameof(FinishBakeCake))]
+        public async Task<IActionResult> FinishBakeCake([FromBody] CakeType cakeType)
+        {
+            var userId = this.GetClaimantUserId();
 
-			if (!this.IsValidUserId(userId))
-			{
-				return BadRequest("UserId is invalid.");
-			}
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
 
-			// get the cake config
-			var cake = m_ConfigDbContext.Cakes.Cakes.Find(i => i.CakeType == cakeType);
+            // get the cake config
+            var cake = m_ConfigDbContext.Cakes.Cakes.Find(i => i.CakeType == cakeType);
 
-			if (cake == null) return BadRequest("Cake not found.");
+            if (cake == null) return BadRequest("Cake not found.");
 
-			var dbUserBakingCake = await m_CoreDbContext.UsersCakes
-				.Where(i => i.UserId == userId && i.IsBaked == false && i.CakeType == cakeType)
-				.SingleOrDefaultAsync();
-            
-			if (dbUserBakingCake == null)
-			{
-				return BadRequest("Baking cake not found.");
-			}
+            var dbUserBakingCake = await m_CoreDbContext.UsersCakes
+                .Where(i => i.UserId == userId && i.IsBaked == false && i.CakeType == cakeType)
+                .SingleOrDefaultAsync();
 
-			var dbUserInventoryCakes = await m_CoreDbContext.UsersCakes
-				.Where(i => i.UserId == userId && i.IsBaked == true && i.CakeType == cakeType)
-				.ToListAsync();
+            if (dbUserBakingCake == null)
+            {
+                return BadRequest("Baking cake not found.");
+            }
+
+            var dbUserInventoryCakes = await m_CoreDbContext.UsersCakes
+                .Where(i => i.UserId == userId && i.IsBaked == true && i.CakeType == cakeType)
+                .ToListAsync();
 
             // TODO: check max inventory
             if (dbUserInventoryCakes.Count >= m_ConfigDbContext.AppDefaults.MaxCakeCount) return BadRequest("No inventory space for new cake.");
@@ -127,11 +121,11 @@ namespace HappyTokenApi.Controllers
             // change cake status
             dbUserBakingCake.IsBaked = true;
 
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
-			var bakingCake = (UserCake)dbUserBakingCake;
+            var bakingCake = (UserCake)dbUserBakingCake;
 
-			return Ok(bakingCake);
-		}
-	}
+            return RequestResult(bakingCake);
+        }
+    }
 }

@@ -11,19 +11,18 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using HappyTokenApi.Data.Config;
 
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class TokenController : Controller
+    public class TokenController : DataController
     {
         private readonly TokenSettings m_TokenSettings;
-        private readonly CoreDbContext m_CoreDbContext;
 
-        public TokenController(IOptions<TokenSettings> options, CoreDbContext coreDbContext)
+        public TokenController(IOptions<TokenSettings> options, CoreDbContext coreDbContext) : base(coreDbContext, null)
         {
             m_TokenSettings = options.Value;
-            m_CoreDbContext = coreDbContext;
         }
 
         [AllowAnonymous]
@@ -68,7 +67,7 @@ namespace HappyTokenApi.Controllers
                         ExpiresInSecs = 30
                     };
 
-                    return Ok(response);
+                    return RequestResult(response);
                 }
             }
 

@@ -13,16 +13,10 @@ using System.Threading.Tasks;
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class UsersController : Controller
+    public class UsersController : DataController
     {
-        private readonly CoreDbContext m_CoreDbContext;
-
-        private readonly ConfigDbContext m_ConfigDbContext;
-
-        public UsersController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
+        public UsersController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            m_CoreDbContext = coreDbContext;
-            m_ConfigDbContext = configDbContext;
         }
 
         [HttpPost]
@@ -169,7 +163,7 @@ namespace HappyTokenApi.Controllers
                 AuthToken = authToken
             };
 
-            return Ok(response);
+            return RequestResult(response);
             // }
 
             // User with this DeviceId already exists
@@ -177,9 +171,11 @@ namespace HappyTokenApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("{userId}", Name = nameof(GetUserById))]
-        public async Task<IActionResult> GetUserById(string userId)
+        [HttpGet("get", Name = nameof(GetUserById))]
+        public async Task<IActionResult> GetUserById()
         {
+            var userId = this.GetClaimantUserId();
+
             if (!this.IsValidUserId(userId))
             {
                 return BadRequest("UserId is invalid.");
@@ -252,7 +248,7 @@ namespace HappyTokenApi.Controllers
 
                 await m_CoreDbContext.SaveChangesAsync();
 
-                return Ok(userLogin);
+                return RequestResult(userLogin);
             }
 
             return NotFound("Could not find user.");

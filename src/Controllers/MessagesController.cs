@@ -13,13 +13,10 @@ using System.Collections.Generic;
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class MessagesController : Controller
+    public class MessagesController : DataController
     {
-        private readonly CoreDbContext m_CoreDbContext;
-
-        public MessagesController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
+        public MessagesController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            m_CoreDbContext = coreDbContext;
         }
 
         [Authorize]
@@ -34,7 +31,7 @@ namespace HappyTokenApi.Controllers
             }
 
             var dbUsersMessages = await m_CoreDbContext.UsersMessages
-                .Where(i => (i.ToUserId == null || i.ToUserId == userId) && ! i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
+                .Where(i => (i.ToUserId == null || i.ToUserId == userId) && !i.IsDeleted && i.ExpiryDate > DateTime.UtcNow)
                 .ToListAsync();
 
             // get message status for adding status flags
@@ -46,7 +43,8 @@ namespace HappyTokenApi.Controllers
                 // change status value that is not from the individual record table
                 foreach (var message in dbUsersMessages)
                 {
-                    if (dbUserMessageStatus.ReadMessageIds.Contains(message.UsersMessageId)) {
+                    if (dbUserMessageStatus.ReadMessageIds.Contains(message.UsersMessageId))
+                    {
                         message.IsRead = true;
                     }
                 }
@@ -59,8 +57,8 @@ namespace HappyTokenApi.Controllers
             }
 
             var result = dbUsersMessages.OfType<UserMessage>().ToList();
-            
-            return Ok(result);
+
+            return RequestResult(result);
         }
 
         [Authorize]
@@ -117,7 +115,7 @@ namespace HappyTokenApi.Controllers
 
             var result = dbUserCakes.OfType<UserCake>().ToList();
 
-            return Ok(result);
+            return RequestResult(result);
         }
 
         [Authorize]
@@ -190,7 +188,7 @@ namespace HappyTokenApi.Controllers
             // Send the updated Wallet back to the user
             var wallet = (Wallet)dbUserWallet;
 
-            return Ok(wallet);
+            return RequestResult(wallet);
         }
 
 

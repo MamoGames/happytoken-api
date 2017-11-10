@@ -39,7 +39,7 @@ namespace HappyTokenApi.Controllers
                     AuthToken = dbUser.AuthToken
                 };
 
-                return Ok(response);
+                return RequestResult(response);
             }
 
             return BadRequest("Could not authenticate user by email.");
@@ -82,7 +82,7 @@ namespace HappyTokenApi.Controllers
                     StatusCode = 0
                 };
 
-                return Ok(response);
+                return RequestResult(response);
             }
 
             return BadRequest("Could not link email to user.");
@@ -108,6 +108,8 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User name is required.");
             }
 
+            this.AddDataToReturnList(await this.Cake());
+
             // Pull the users data from the DB
             var dbUser = await m_CoreDbContext.UsersProfiles
                 .Where(dbu => dbu.UserId == userId)
@@ -119,7 +121,7 @@ namespace HappyTokenApi.Controllers
 
                 await m_CoreDbContext.SaveChangesAsync();
 
-                return this.RequestResult(0, "Done");
+                return RequestResult("Success");
             }
 
 

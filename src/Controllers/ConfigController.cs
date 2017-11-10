@@ -3,17 +3,15 @@ using HappyTokenApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using HappyTokenApi.Data.Core;
 
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class ConfigController : Controller
+    public class ConfigController : DataController
     {
-        private readonly ConfigDbContext m_ConfigDbContext;
-
-        public ConfigController(ConfigDbContext configDbContext)
+        public ConfigController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            m_ConfigDbContext = configDbContext;
         }
 
         [Authorize]
@@ -31,7 +29,7 @@ namespace HappyTokenApi.Controllers
                 Store = m_ConfigDbContext.Store
             };
 
-            return Ok(appConfig);
+            return RequestResult(appConfig);
         }
 
         [AllowAnonymous]
@@ -40,7 +38,7 @@ namespace HappyTokenApi.Controllers
         {
             m_ConfigDbContext.RefreshConfig();
 
-            return Ok($"Config data refreshed at {DateTime.UtcNow}");
+            return RequestResult($"Config data refreshed at {DateTime.UtcNow}");
         }
     }
 }

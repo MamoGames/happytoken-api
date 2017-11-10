@@ -13,15 +13,10 @@ using System.Threading.Tasks;
 namespace HappyTokenApi.Controllers
 {
     [Route("[controller]")]
-    public class FriendsController : Controller
+    public class FriendsController : DataController
     {
-        private readonly CoreDbContext m_CoreDbContext;
-        private readonly ConfigDbContext m_ConfigDbContext;
-
-        public FriendsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext)
+        public FriendsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            m_CoreDbContext = coreDbContext;
-            m_ConfigDbContext = configDbContext;
         }
 
         [Authorize]
@@ -59,7 +54,7 @@ namespace HappyTokenApi.Controllers
                 friends.Add(friendInfo);
             }
 
-            return Ok(friends);
+            return RequestResult(friends);
         }
 
         [Authorize]
@@ -80,7 +75,7 @@ namespace HappyTokenApi.Controllers
 
             if (dbUsersFriends?.Count == 0)
             {
-                return Ok(new List<FriendInfo>());
+                return RequestResult(new List<FriendInfo>());
             }
 
             var dbUserProfiles = await (from usersProfile in m_CoreDbContext.UsersProfiles
@@ -122,13 +117,13 @@ namespace HappyTokenApi.Controllers
                     friend.Happiness = happiness;
                 }
 
-				var dbUserAvatars = await m_CoreDbContext.UsersAvatars
-					.Where(i => i.UserId == dbUserFriend.FriendUserId)
-					.ToListAsync();
-                
-				var dbUserBuildings = await m_CoreDbContext.UsersBuildings
-					.Where(i => i.UserId == dbUserFriend.FriendUserId)
-					.ToListAsync();
+                var dbUserAvatars = await m_CoreDbContext.UsersAvatars
+                    .Where(i => i.UserId == dbUserFriend.FriendUserId)
+                    .ToListAsync();
+
+                var dbUserBuildings = await m_CoreDbContext.UsersBuildings
+                    .Where(i => i.UserId == dbUserFriend.FriendUserId)
+                    .ToListAsync();
 
                 friend.UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList();
                 friend.UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList();
@@ -136,7 +131,7 @@ namespace HappyTokenApi.Controllers
                 friends.Add(friend);
             }
 
-            return Ok(friends);
+            return RequestResult(friends);
         }
 
         [Authorize]
@@ -171,7 +166,7 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("User has too many friends.");
             }
 
-            if (userId == friendUserId) 
+            if (userId == friendUserId)
             {
                 return BadRequest("Cannot add self as friend.");
             }
@@ -214,94 +209,94 @@ namespace HappyTokenApi.Controllers
             // Increment the Users friend count
             dbUserProfile.FriendCount++;
 
-			//TODO: add friend count for target
+            //TODO: add friend count for target
 
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
             // Grab the entire (updated) list of friends, and return to the user
             return await GetFriends();
         }
 
-		[Authorize]
-		[HttpPost("remove", Name = nameof(RemoveFriendByUserId))]
-		public async Task<IActionResult> RemoveFriendByUserId([FromBody] string friendUserId)
-		{
-			if (string.IsNullOrEmpty(friendUserId))
-			{
-				return BadRequest("Friend UserId was invalid.");
-			}
+        [Authorize]
+        [HttpPost("remove", Name = nameof(RemoveFriendByUserId))]
+        public async Task<IActionResult> RemoveFriendByUserId([FromBody] string friendUserId)
+        {
+            if (string.IsNullOrEmpty(friendUserId))
+            {
+                return BadRequest("Friend UserId was invalid.");
+            }
 
-			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
-			//if (this.IsValidUserId(friendUserId))
-			//{
-			//    return Forbid("Friend UserId is not valid.");
-			//}
+            // TODO: This seems to be choking on the friends UserId, which is a valid GUID
+            //if (this.IsValidUserId(friendUserId))
+            //{
+            //    return Forbid("Friend UserId is not valid.");
+            //}
 
-			var userId = this.GetClaimantUserId();
+            var userId = this.GetClaimantUserId();
 
-			// Check users friend count
-			var dbUserProfile = await m_CoreDbContext.UsersProfiles
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            // Check users friend count
+            var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-			if (dbUserProfile == null)
-			{
-				return BadRequest("Profile for UserId was not found.");
-			}
+            if (dbUserProfile == null)
+            {
+                return BadRequest("Profile for UserId was not found.");
+            }
 
-			var dbUserFriends = await m_CoreDbContext.UsersFriends
-				.Where(i => i.UserId == userId)
-				.ToListAsync();
+            var dbUserFriends = await m_CoreDbContext.UsersFriends
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
 
-			if (dbUserFriends == null) return BadRequest("User is not in friend list.");
+            if (dbUserFriends == null) return BadRequest("User is not in friend list.");
 
-			// Check user is not already friend in either direction
-			var userFriend = dbUserFriends.Find(i => i.FriendUserId == friendUserId);
-			if (userFriend == null)
-			{
-				return BadRequest("User is not in friend list.");
-			}
+            // Check user is not already friend in either direction
+            var userFriend = dbUserFriends.Find(i => i.FriendUserId == friendUserId);
+            if (userFriend == null)
+            {
+                return BadRequest("User is not in friend list.");
+            }
 
-			// Remove user and friends relationship
-			m_CoreDbContext.UsersFriends.Remove(userFriend);
+            // Remove user and friends relationship
+            m_CoreDbContext.UsersFriends.Remove(userFriend);
 
-			// Remove friend and user's relationship
-			userFriend = await m_CoreDbContext.UsersFriends
-				.Where(i => i.UserId == friendUserId && i.FriendUserId == userId)
-				.SingleAsync();
-            
-			m_CoreDbContext.UsersFriends.Remove(userFriend);
+            // Remove friend and user's relationship
+            userFriend = await m_CoreDbContext.UsersFriends
+                .Where(i => i.UserId == friendUserId && i.FriendUserId == userId)
+                .SingleAsync();
 
-			// Increment the Users friend count
-			dbUserProfile.FriendCount--;
+            m_CoreDbContext.UsersFriends.Remove(userFriend);
+
+            // Increment the Users friend count
+            dbUserProfile.FriendCount--;
 
             //TODO: remove friend count from target
 
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
-			// Grab the entire (updated) list of friends, and return to the user
-			return await GetFriends();
-		}
+            // Grab the entire (updated) list of friends, and return to the user
+            return await GetFriends();
+        }
 
-		[Authorize]
-		[HttpPost("search", Name = nameof(SearchUsers))]
-		public async Task<IActionResult> SearchUsers([FromBody] string userName)
-		{
-			var userId = this.GetClaimantUserId();
+        [Authorize]
+        [HttpPost("search", Name = nameof(SearchUsers))]
+        public async Task<IActionResult> SearchUsers([FromBody] string userName)
+        {
+            var userId = this.GetClaimantUserId();
 
-			var fromDate = DateTime.UtcNow - TimeSpan.FromHours(24);
+            var fromDate = DateTime.UtcNow - TimeSpan.FromHours(24);
 
-			var dbUserProfiles = await m_CoreDbContext.UsersProfiles
-				.Where(i => i.Name.ToLower().Contains(userName.ToLower()))
-				.Take(20)
-				.ToListAsync();
+            var dbUserProfiles = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.Name.ToLower().Contains(userName.ToLower()))
+                .Take(20)
+                .ToListAsync();
 
-			var friends = new List<FriendInfo>();
+            var friends = new List<FriendInfo>();
 
-			foreach (var profile in dbUserProfiles)
-			{
-				// exclude self
-				if (profile.UserId == userId) continue;
+            foreach (var profile in dbUserProfiles)
+            {
+                // exclude self
+                if (profile.UserId == userId) continue;
 
                 var friendInfo = new FriendInfo
                 {
@@ -312,49 +307,49 @@ namespace HappyTokenApi.Controllers
                     LastVisitDate = DateTime.MinValue,
                     Level = profile.Level,
                     CakeDonated = profile.CakeDonated,
-					Happiness = new Happiness() // Do we want Happiness?
-				};
+                    Happiness = new Happiness() // Do we want Happiness?
+                };
 
-				friends.Add(friendInfo);
-			}
+                friends.Add(friendInfo);
+            }
 
-			return Ok(friends);
-		}
+            return RequestResult(friends);
+        }
 
-		[Authorize]
-		[HttpPost("giftcake", Name = nameof(GiftCakeToFriend))]
+        [Authorize]
+        [HttpPost("giftcake", Name = nameof(GiftCakeToFriend))]
         public async Task<IActionResult> GiftCakeToFriend([FromBody] UserSendCakeMessage sendCakeMessage)
-		{
+        {
             var friendUserId = sendCakeMessage.ToUserId;
-			if (string.IsNullOrEmpty(friendUserId))
-			{
-				return BadRequest("Friend UserId was invalid.");
-			}
+            if (string.IsNullOrEmpty(friendUserId))
+            {
+                return BadRequest("Friend UserId was invalid.");
+            }
 
-			var userId = this.GetClaimantUserId();
+            var userId = this.GetClaimantUserId();
 
-			// Check users friend count
-			var dbUserProfile = await m_CoreDbContext.UsersProfiles
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            // Check users friend count
+            var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-			if (dbUserProfile == null)
-			{
-				return BadRequest("Profile for UserId was not found.");
-			}
+            if (dbUserProfile == null)
+            {
+                return BadRequest("Profile for UserId was not found.");
+            }
 
-			var dbUserFriend = await m_CoreDbContext.UsersFriends
-				.Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
-				.SingleOrDefaultAsync();
+            var dbUserFriend = await m_CoreDbContext.UsersFriends
+                .Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
+                .SingleOrDefaultAsync();
 
-			if (dbUserFriend == null) return BadRequest("User is not in friend list.");
+            if (dbUserFriend == null) return BadRequest("User is not in friend list.");
 
             // check if the user has already gifted the friend or has reached the max number of gift today
-			var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-			if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
+            if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
             dbUserDailyActions.Update();
 
             if (dbUserDailyActions.GiftedCakeUserIds.Contains(friendUserId)) return BadRequest("User has already gifted the friend today.");
@@ -363,9 +358,9 @@ namespace HappyTokenApi.Controllers
 
             dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
 
-			var dbUserHappiness = await m_CoreDbContext.UsersHappiness
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            var dbUserHappiness = await m_CoreDbContext.UsersHappiness
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
             // create the message for friend for receiving
             var dbUserMessage = MessagesController.CreateCakeMessage(userId, dbUserProfile.Name, friendUserId, sendCakeMessage.CakeType);
@@ -376,73 +371,73 @@ namespace HappyTokenApi.Controllers
             dbUserHappiness.Social += 1;
             dbUserProfile.CakeDonated += 1;
 
-			
-			await m_CoreDbContext.SaveChangesAsync();
 
-            return Ok(dbUserDailyActions);
-		}
+            await m_CoreDbContext.SaveChangesAsync();
 
-		[Authorize]
-		[HttpPost("visit", Name = nameof(VisitFriend))]
-		public async Task<IActionResult> VisitFriend([FromBody] string friendUserId)
-		{
-			if (string.IsNullOrEmpty(friendUserId))
-			{
-				return BadRequest("Friend UserId was invalid.");
-			}
+            return RequestResult(dbUserDailyActions as UserDailyActions);
+        }
 
-			// TODO: This seems to be choking on the friends UserId, which is a valid GUID
-			//if (this.IsValidUserId(friendUserId))
-			//{
-			//    return Forbid("Friend UserId is not valid.");
-			//}
+        [Authorize]
+        [HttpPost("visit", Name = nameof(VisitFriend))]
+        public async Task<IActionResult> VisitFriend([FromBody] string friendUserId)
+        {
+            if (string.IsNullOrEmpty(friendUserId))
+            {
+                return BadRequest("Friend UserId was invalid.");
+            }
 
-			var userId = this.GetClaimantUserId();
+            // TODO: This seems to be choking on the friends UserId, which is a valid GUID
+            //if (this.IsValidUserId(friendUserId))
+            //{
+            //    return Forbid("Friend UserId is not valid.");
+            //}
 
-			// Check users friend count
-			var dbUserProfile = await m_CoreDbContext.UsersProfiles
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            var userId = this.GetClaimantUserId();
 
-			if (dbUserProfile == null)
-			{
-				return BadRequest("Profile for UserId was not found.");
-			}
+            // Check users friend count
+            var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-			var dbUserFriend = await m_CoreDbContext.UsersFriends
-				.Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
-				.SingleOrDefaultAsync();
+            if (dbUserProfile == null)
+            {
+                return BadRequest("Profile for UserId was not found.");
+            }
 
-			if (dbUserFriend == null) return BadRequest("User is not in friend list.");
+            var dbUserFriend = await m_CoreDbContext.UsersFriends
+                .Where(i => i.UserId == userId && i.FriendUserId == friendUserId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserFriend == null) return BadRequest("User is not in friend list.");
 
             dbUserFriend.LastVisitDate = DateTime.UtcNow;
 
-			// check if the user has already gifted the friend or has reached the max number of gift today
-			var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+            // check if the user has already gifted the friend or has reached the max number of gift today
+            var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-			if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
-			dbUserDailyActions.Update();
+            if (dbUserDailyActions == null) return BadRequest("User daily actions record not found.");
+            dbUserDailyActions.Update();
 
-			if (dbUserDailyActions.VisitedUserIds.Contains(friendUserId)) return BadRequest("User has already gifted the friend today.");
+            if (dbUserDailyActions.VisitedUserIds.Contains(friendUserId)) return BadRequest("User has already gifted the friend today.");
 
-			if (dbUserDailyActions.VisitedUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxFriendVisitPerDay) return BadRequest("User cannot gift more friends today.");
+            if (dbUserDailyActions.VisitedUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxFriendVisitPerDay) return BadRequest("User cannot gift more friends today.");
 
-			dbUserDailyActions.VisitedUserIds = dbUserDailyActions.VisitedUserIds.ToList().Append(friendUserId).ToArray();
+            dbUserDailyActions.VisitedUserIds = dbUserDailyActions.VisitedUserIds.ToList().Append(friendUserId).ToArray();
 
             var dbFriendHappiness = await m_CoreDbContext.UsersHappiness
-				.Where(i => i.UserId == userId)
-				.SingleOrDefaultAsync();
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
 
-            if (dbFriendHappiness != null) 
+            if (dbFriendHappiness != null)
             {
-				dbFriendHappiness.Social += 1;
+                dbFriendHappiness.Social += 1;
             }
 
-			await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
-			return Ok(dbUserDailyActions);
-		}
+            return RequestResult(dbUserDailyActions);
+        }
     }
 }

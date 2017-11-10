@@ -29,18 +29,21 @@ namespace HappyTokenApi.Controllers
             this.updatedDataRecords = new List<RecordData>();
         }
 
-        protected void AddDataToReturnList(string key, IActionResult obj)
+        protected void AddDataToReturnList(IActionResult obj)
         {
+            var recordData = (obj as ObjectResult).Value as RecordData;
+
+            // TODO: handle error    
+            //if (recordData == null) 
+            //{
+            //    
+            //}
+
             //string json = new JavaScriptSerializer().Serialize(jsonResult.Data);
 
             // TODO: remove existing record data with the same key
 
-            this.updatedDataRecords.Add(new RecordData
-            {
-                Key = key,
-                Hash = "123",
-                Data = (obj as JsonResult).Value,
-            });
+            this.updatedDataRecords.Add(recordData);
         }
 
         protected void ClearDataInReturnList()
@@ -48,7 +51,7 @@ namespace HappyTokenApi.Controllers
             this.updatedDataRecords.Clear();
         }
 
-        protected IActionResult RequestResult(int statusCode, object content)
+        protected IActionResult RequestResult(object content, int statusCode = 0)
         {
             return Ok(new RequestResult
             {
@@ -58,8 +61,28 @@ namespace HappyTokenApi.Controllers
             });
         }
 
+        protected IActionResult DataResult(string key, object record)
+        {
+            return Ok(new RecordData
+            {
+                Key = key,
+                Hash = "",
+                Data = record,
+            });
+        }
+
         [Authorize]
-        [HttpPost("status")]
+        [HttpGet("cake")]
+        public async Task<IActionResult> Cake()
+        {
+            return DataResult("cake", new Cake
+            {
+                Gold = 10,
+            });
+        }
+
+        [Authorize]
+        [HttpGet("status")]
         public async Task<IActionResult> Status()
         {
             var userId = this.GetClaimantUserId();
@@ -131,7 +154,7 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            return Json(userLogin);
+            return DataResult("status", userLogin);
         }
 
         private DailyRewards ProcessDailyReward(Profile profile, Wallet wallet)

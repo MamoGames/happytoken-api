@@ -30,5 +30,14 @@ namespace HappyTokenApi.Data.Core
         public DbSet<DbUserMessagesStatus> UsersMessagesStatus { get; set; }
 
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<DbUserQuest>()
+                .Property(b => b._RequiresValues).HasColumnName("RequiresValues");
+
+            modelBuilder.Entity<DbUserQuest>()
+                .Property(b => b._TargetValues).HasColumnName("TargetValues");
+        }
     }
 }

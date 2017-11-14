@@ -19,6 +19,8 @@ namespace HappyTokenApi.Data.Config
 
         public DbCakes Cakes { get; private set; }
 
+        public DbQuests Quests { get; private set; }
+
         public DbAvatars Avatars { get; private set; }
 
         public DbBuildings Buildings { get; private set; }
@@ -51,6 +53,8 @@ namespace HappyTokenApi.Data.Config
                 UserDefaults = db.Document<DbUserDefaults>(Versions.UserDefaults);
 
                 Cakes = db.Document<DbCakes>(Versions.Cakes);
+
+                Quests = db.Document<DbQuests>(Versions.Quests);
 
                 Avatars = db.Document<DbAvatars>(Versions.Avatars);
 

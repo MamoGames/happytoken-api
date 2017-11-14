@@ -17,7 +17,7 @@ namespace HappyTokenApi.Data.Core.Entities
 
         public bool IsCompleted { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreateDate { get; set; }
 
         public DateTime ExpiryDate { get; set; }
 
@@ -37,6 +37,21 @@ namespace HappyTokenApi.Data.Core.Entities
         {
             get { return _TargetValues == null ? null : JsonConvert.DeserializeObject<UserStat[]>(_TargetValues); }
             set { _TargetValues = JsonConvert.SerializeObject(value); }
+        }
+
+        public UserQuest ToUserQuest()
+        {
+            var userQuest = new UserQuest
+            {
+                QuestId = QuestId,
+                IsCompleted = IsCompleted,
+                CreateDate = CreateDate,
+                ExpiryDate = ExpiryDate,
+                RequiresValues = RequiresValues,
+                TargetValues = TargetValues,
+            };
+
+            return userQuest;
         }
     }
 }

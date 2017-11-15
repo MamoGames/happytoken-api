@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace HappyTokenApi.Controllers
 {
@@ -303,10 +304,7 @@ namespace HappyTokenApi.Controllers
             var dbQuest = m_ConfigDbContext.Quests.Quests.Find(
                 i => i.QuestId == dbUserQuest.QuestId);
 
-            if (dbQuest == null)
-            {
-                return BadRequest("Quest is invalid.");
-            }
+            Debug.Assert(dbQuest != null, "Quest not in config");
 
             var userQuest = new UserQuest
             {

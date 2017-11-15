@@ -12,8 +12,12 @@ namespace HappyTokenApi.Controllers
 {
     public class UserStatsController : DataController
     {
-        public UserStatsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
+        //TODO: consider makes it better. This controller is used as a helper but is also a DataController.
+        protected string m_UserId;
+
+        public UserStatsController(string userId, CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
+            this.m_UserId = userId;
         }
 
         public async Task AddUserStatValueAsync(UserStatType statType, long incValue)
@@ -46,25 +50,25 @@ namespace HappyTokenApi.Controllers
 
         protected async Task AddUserStatValue(string statName, long incValue)
         {
-            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
+            var userStat = await this.GetUserStat(this.m_UserId, statName);
             userStat.AddValue(incValue);
         }
 
         protected async Task AddUserStatValue(string statName, float incValue)
         {
-            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
+            var userStat = await this.GetUserStat(this.m_UserId, statName);
             userStat.AddValue(incValue);
         }
 
         protected async Task SetUserStatMaxValue(string statName, long incValue)
         {
-            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
+            var userStat = await this.GetUserStat(this.m_UserId, statName);
             userStat.SetMaxValue(incValue);
         }
 
         protected async Task SetUserStatMaxValue(string statName, float incValue)
         {
-            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
+            var userStat = await this.GetUserStat(this.m_UserId, statName);
             userStat.SetMaxValue(incValue);
         }
 

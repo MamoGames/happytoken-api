@@ -32,3 +32,4 @@ namespace HappyTokenApi.Models
         BUILDING_UPGRADE_TOTAL,
         BUILDING_UPGRADE_,
     }
+}

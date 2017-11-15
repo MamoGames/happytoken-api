@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using HappyTokenApi.Models;
 using Newtonsoft.Json;
@@ -7,7 +8,8 @@ namespace HappyTokenApi.Data.Core.Entities
 {
     public class DbUserQuest
     {
-        public string UserQuestId { get; set; }
+        [Key]
+        public string UsersQuestId { get; set; }
 
         public string UserId { get; set; }
 

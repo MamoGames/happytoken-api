@@ -123,6 +123,10 @@ namespace HappyTokenApi.Controllers
             // change cake status
             dbUserBakingCake.IsBaked = true;
 
+            var userStatController = new UserStatsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            await userStatController.AddUserStatValueAsync(UserStatType.CAKE_BAKED_TOTAL, 1);
+            await userStatController.AddUserStatValueAsync(UserStatType.CAKE_BAKED_, ((int)cakeType).ToString(), 1);
+
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());

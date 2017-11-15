@@ -297,6 +297,10 @@ namespace HappyTokenApi.Controllers
             dbUserHappiness.Social += 1;
             dbUserProfile.CakeDonated += 1;
 
+            var userStatController = new UserStatsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_TOTAL, 1);
+            await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_, ((int)sendCakeMessage.CakeType).ToString(), 1);
+
 
             await m_CoreDbContext.SaveChangesAsync();
 
@@ -362,6 +366,9 @@ namespace HappyTokenApi.Controllers
             {
                 dbFriendHappiness.Social += 1;
             }
+
+            var userStatController = new UserStatsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            await userStatController.AddUserStatValueAsync(UserStatType.FRIEND_VISIT, 1);
 
             await m_CoreDbContext.SaveChangesAsync();
 

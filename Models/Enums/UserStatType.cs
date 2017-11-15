@@ -1,5 +1,5 @@
 ﻿using System;
-namespace HappyTokenApi.Enums
+namespace HappyTokenApi.Models
 {
     /// <summary>
     /// Stat name end with underscore "_" has additional value at the end 
@@ -28,5 +28,7 @@ namespace HappyTokenApi.Enums
         CAKE_BAKED_,
         CAKE_GIFTED_TOTAL,
         CAKE_GIFTED_,
+        FRIEND_VISIT,
+        BUILDING_UPGRADE_TOTAL,
+        BUILDING_UPGRADE_,
     }
-}

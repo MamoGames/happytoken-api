@@ -1,8 +1,12 @@
 ﻿using System;
+using HappyTokenApi.Data.Core.Entities;
+
 namespace HappyTokenApi.Models
 {
     public static class Extensions
     {
+        #region UserStat
+
         public static void AddValue(this UserStat userStat, long value)
         {
             if (userStat.StatName.StartsWith("F_", StringComparison.CurrentCultureIgnoreCase))
@@ -50,5 +54,16 @@ namespace HappyTokenApi.Models
                 if (value > userStat.StatValue) userStat.StatValue = (long)(value + 0.5f);
             }
         }
+
+        #endregion UserStat
+
+        #region DbUserQuest
+
+        public static void Expire(this DbUserQuest dbUserQuest)
+        {
+            dbUserQuest.IsActive = false;
+        }
+
+        #endregion UserQuest
     }
 }

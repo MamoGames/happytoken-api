@@ -41,19 +41,13 @@ namespace HappyTokenApi.Data.Core.Entities
             set { _TargetValues = JsonConvert.SerializeObject(value); }
         }
 
-        public UserQuest ToUserQuest()
+        // json serialized value
+        internal string _Rewards { get; set; }
+        [NotMapped]
+        public Rewards Rewards
         {
-            var userQuest = new UserQuest
-            {
-                QuestId = QuestId,
-                IsCompleted = IsCompleted,
-                CreateDate = CreateDate,
-                ExpiryDate = ExpiryDate,
-                RequiresValues = RequiresValues,
-                TargetValues = TargetValues,
-            };
-
-            return userQuest;
+            get { return _Rewards == null ? null : JsonConvert.DeserializeObject<Rewards>(_Rewards); }
+            set { _Rewards = JsonConvert.SerializeObject(value); }
         }
     }
 }

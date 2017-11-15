@@ -42,6 +42,9 @@ namespace HappyTokenApi.Data.Core
 
             modelBuilder.Entity<DbUserQuest>()
                 .Property(b => b._TargetValues).HasColumnName("TargetValues");
+
+            modelBuilder.Entity<DbUserQuest>()
+                .Property(b => b._Rewards).HasColumnName("Rewards");
         }
     }
 }

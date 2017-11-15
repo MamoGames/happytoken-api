@@ -10,6 +10,6 @@ namespace HappyTokenApi.Data.Config.Entities
         [DocumentProperty(Identifier = IdentifierType.Key)]
         public string Key { get; set; }
 
-        public List<DbQuest> DbQuest { get; set; }
+        public List<DbQuest> Quests { get; set; }
     }
 }

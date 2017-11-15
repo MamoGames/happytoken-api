@@ -10,20 +10,10 @@ using System.Diagnostics;
 
 namespace HappyTokenApi.Controllers
 {
-    public class UserStatsController
+    public class UserStatsController : DataController
     {
-        protected readonly CoreDbContext m_CoreDbContext;
-
-        protected readonly ConfigDbContext m_ConfigDbContext;
-
-        protected string m_UserId;
-
-        public UserStatsController(string userId, CoreDbContext coreDbContext, ConfigDbContext configDbContext)
+        public UserStatsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
-            this.m_UserId = userId;
-            m_CoreDbContext = coreDbContext;
-            m_ConfigDbContext = configDbContext;
-
         }
 
         public async Task AddUserStatValueAsync(UserStatType statType, long incValue)
@@ -56,25 +46,25 @@ namespace HappyTokenApi.Controllers
 
         protected async Task AddUserStatValue(string statName, long incValue)
         {
-            var userStat = await this.GetUserStat(m_UserId, statName);
+            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
             userStat.AddValue(incValue);
         }
 
         protected async Task AddUserStatValue(string statName, float incValue)
         {
-            var userStat = await this.GetUserStat(m_UserId, statName);
+            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
             userStat.AddValue(incValue);
         }
 
         protected async Task SetUserStatMaxValue(string statName, long incValue)
         {
-            var userStat = await this.GetUserStat(m_UserId, statName);
+            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
             userStat.SetMaxValue(incValue);
         }
 
         protected async Task SetUserStatMaxValue(string statName, float incValue)
         {
-            var userStat = await this.GetUserStat(m_UserId, statName);
+            var userStat = await this.GetUserStat(this.GetClaimantUserId(), statName);
             userStat.SetMaxValue(incValue);
         }
 

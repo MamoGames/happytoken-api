@@ -22,5 +22,7 @@ namespace HappyTokenApi.Data.Config.Entities
 
         public List<UserStat> RequiresStat { get; set; }
 
+        public QuestRewards QuestRewards { get; set; }
+
     }
 }

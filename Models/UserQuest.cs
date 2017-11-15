@@ -7,6 +7,10 @@ namespace HappyTokenApi.Models
     {
         public string QuestId { get; set; }
 
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
         public bool IsCompleted { get; set; }
 
         public DateTime CreateDate { get; set; }
@@ -17,5 +21,7 @@ namespace HappyTokenApi.Models
 
         // json serialized value
         public UserStat[] TargetValues { get; set; }
+
+        public Rewards Rewards { get; set; }
     }
 }

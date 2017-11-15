@@ -297,5 +297,30 @@ namespace HappyTokenApi.Controllers
 
             return DataResult("messages", result);
         }
+
+        protected UserQuest GetUserQuest(DbUserQuest dbUserQuest)
+        {
+            var dbQuest = m_ConfigDbContext.Quests.Quests.Find(
+                i => i.QuestId == dbUserQuest.QuestId);
+
+            if (dbQuest == null)
+            {
+                return BadRequest("Quest is invalid.");
+            }
+
+            var userQuest = new UserQuest
+            {
+                Name = dbQuest.Name,
+                Description = dbQuest.Description,
+                QuestId = dbUserQuest.QuestId,
+                IsCompleted = dbUserQuest.IsCompleted,
+                CreateDate = dbUserQuest.CreateDate,
+                ExpiryDate = dbUserQuest.ExpiryDate,
+                RequiresValues = dbUserQuest.RequiresValues,
+                TargetValues = dbUserQuest.TargetValues,
+            };
+
+            return userQuest;
+        }
     }
 }

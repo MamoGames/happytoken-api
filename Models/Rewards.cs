@@ -4,5 +4,6 @@
     {
         public Wallet Wallet { get; set; }
 
+        public int Xp { get; set; }
     }
 }

@@ -24,5 +24,14 @@ namespace HappyTokenApi.Data.Config.Entities
 
         public QuestRewards QuestRewards { get; set; }
 
+
+        #region public functions
+
+        public bool ShouldTrigger(List<UserStat> userStats, Dictionary<string, DateTime> allFinishedQuestsWithTime, string onCompleteQuestId = "")
+        {
+            return this.TriggerRequirements.AllMet(this.QuestId, userStats, allFinishedQuestsWithTime, onCompleteQuestId);
+        }
+
+        #endregion public functions
     }
 }

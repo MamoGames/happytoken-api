@@ -16,5 +16,11 @@ namespace HappyTokenApi.Models
         {
             return (int)(this.Base + this.RandomMax * Math.Clamp(proportion, 0, 1));
         }
+
+        public ValueRange(int Base)
+        {
+            this.Base = Base;
+            this.RandomMax = 0;
+        }
     }
 }

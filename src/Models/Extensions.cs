@@ -1,5 +1,6 @@
 ﻿using System;
 using HappyTokenApi.Data.Core.Entities;
+using System.Linq;
 
 namespace HappyTokenApi.Models
 {
@@ -57,13 +58,31 @@ namespace HappyTokenApi.Models
 
         #endregion UserStat
 
-        #region DbUserQuest
 
-        public static void Expire(this DbUserQuest dbUserQuest)
+        #region QuestRewards
+
+        /// <summary>
+        /// Generate a quest rewards without all the random values
+        /// </summary>
+        /// <returns>The quest rewards.</returns>
+        public static Rewards GenerateRewards(this QuestRewards questRewards)
         {
-            dbUserQuest.IsActive = false;
+            // TODO: support avatar pieces, etc
+
+            return new Rewards
+            {
+                Wallet = new Wallet
+                {
+                    Gold = questRewards.Gold.GetNewRandomValue(),
+                    Gems = questRewards.Gems.GetNewRandomValue(),
+                    HappyTokens = questRewards.HappyTokens.GetNewRandomValue(),
+                },
+                Xp = questRewards.Xp.GetNewRandomValue(),
+            };
         }
 
-        #endregion UserQuest
+        #endregion QuestRewards
+
+
     }
 }

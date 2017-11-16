@@ -3,7 +3,7 @@ namespace HappyTokenApi.Models
 {
     public enum QuestRepeatType
     {
-        None = 0,
+        Repeating = 0,
         OnceOnly,
         Daily,
         Weekly,

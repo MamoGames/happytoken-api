@@ -49,5 +49,16 @@ namespace HappyTokenApi.Data.Core.Entities
             get { return _Rewards == null ? null : JsonConvert.DeserializeObject<Rewards>(_Rewards); }
             set { _Rewards = JsonConvert.SerializeObject(value); }
         }
+
+
+
+        #region public functions
+
+        public void Expire()
+        {
+            this.IsActive = false;
+        }
+
+        #endregion public functions
     }
 }

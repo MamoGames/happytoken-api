@@ -16,16 +16,18 @@ namespace HappyTokenApi.Controllers
     [Route("[controller]")]
     public class QuestsController : DataController
     {
-        public QuestsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
+        //TODO: consider makes it better. This controller is used as a helper but is also a DataController.
+        protected string m_UserId;
+
+        public QuestsController(string userId, CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
+            this.m_UserId = userId;
         }
 
         public async Task<List<DbUserQuest>> CheckQuestUpdates()
         {
-            var userId = this.GetClaimantUserId();
-
             var dbUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == userId && i.IsActive)
+                .Where(i => i.UserId == this.m_UserId && i.IsActive)
                 .ToListAsync();
 
             var updatedQuests = new List<DbUserQuest>();
@@ -50,7 +52,7 @@ namespace HappyTokenApi.Controllers
 
                             foreach (var requirement in dbUserQuest.TargetValues)
                             {
-                                var dbUserStat = await m_CoreDbContext.UsersStats.Where(i => i.UserId == userId && i.StatName == requirement.StatName).SingleOrDefaultAsync();
+                                var dbUserStat = await m_CoreDbContext.UsersStats.Where(i => i.UserId == this.m_UserId && i.StatName == requirement.StatName).SingleOrDefaultAsync();
 
                                 if (dbUserStat == null)
                                 {
@@ -83,23 +85,21 @@ namespace HappyTokenApi.Controllers
         // TODO: consider optimize the checking to only check those required
         public async Task<List<DbUserQuest>> CheckNewQuests()
         {
-            var userId = this.GetClaimantUserId();
-
             var newQuests = new List<DbUserQuest>();
 
             var dbUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == userId && i.IsActive)
+                .Where(i => i.UserId == this.m_UserId && i.IsActive)
                 .ToListAsync();
 
             var allUserQuestIds = dbUserQuests.Select(i => i.QuestId).ToList();
 
             var allUserStats = await m_CoreDbContext.UsersStats
-                .Where(i => i.UserId == userId)
+                .Where(i => i.UserId == this.m_UserId)
                 .ToListAsync();
 
             // build list of quest with last finished time
             var dbFinishedUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == userId && !i.IsActive && i.IsCompleted)
+                .Where(i => i.UserId == this.m_UserId && !i.IsActive && i.IsCompleted)
                 .ToListAsync();
             var allFinishedQuestsWithTime = new Dictionary<string, DateTime>();
 
@@ -126,7 +126,7 @@ namespace HappyTokenApi.Controllers
                         var newQuest = new DbUserQuest
                         {
                             UsersQuestId = Guid.NewGuid().ToString(),
-                            UserId = userId,
+                            UserId = this.m_UserId,
                             QuestId = quest.QuestId,
                             CreateDate = DateTime.UtcNow,
                             IsActive = true,

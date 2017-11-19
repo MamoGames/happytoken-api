@@ -182,7 +182,7 @@ namespace HappyTokenApi.Controllers
 
         [Authorize]
         [HttpGet("friends")]
-        public async Task<IActionResult> GetFriends()
+        public async Task<IActionResult> GetUserFriends()
         {
             var userId = this.GetClaimantUserId();
 
@@ -299,7 +299,33 @@ namespace HappyTokenApi.Controllers
             return DataResult("messages", result);
         }
 
-        protected UserQuest GetUserQuest(DbUserQuest dbUserQuest)
+        [Authorize]
+        [HttpGet("quests")]
+        public async Task<IActionResult> GetUserQuests()
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            var result = new List<UserQuest>();
+
+            var dbUserQuests = await m_CoreDbContext.UsersQuests.Where(i => i.UserId == userId && i.IsActive).ToListAsync();
+
+            if (dbUserQuests != null)
+            {
+                foreach (var userQuest in dbUserQuests)
+                {
+                    result.Add(this.GetUserQuestFromDbUserQuest(userQuest));
+                }
+            }
+
+            return DataResult("user_quests", result);
+        }
+
+        protected UserQuest GetUserQuestFromDbUserQuest(DbUserQuest dbUserQuest)
         {
             var dbQuest = m_ConfigDbContext.Quests.Quests.Find(
                 i => i.QuestId == dbUserQuest.QuestId);

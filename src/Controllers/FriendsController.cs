@@ -136,7 +136,7 @@ namespace HappyTokenApi.Controllers
 
             await m_CoreDbContext.SaveChangesAsync();
 
-            this.AddDataToReturnList(await this.GetFriends());
+            this.AddDataToReturnList(await this.GetUserFriends());
 
             // Grab the entire (updated) list of friends, and return to the user
             return RequestResult("");
@@ -200,7 +200,7 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             // Grab the entire (updated) list of friends, and return to the user
-            this.AddDataToReturnList(await this.GetFriends());
+            this.AddDataToReturnList(await this.GetUserFriends());
             return RequestResult("");
         }
 
@@ -301,10 +301,18 @@ namespace HappyTokenApi.Controllers
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_TOTAL, 1);
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_, ((int)sendCakeMessage.CakeType).ToString(), 1);
 
+            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var updatedQuests = await questController.CheckQuestUpdates();
+            var newQuests = await questController.CheckNewQuests();
 
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+
+            if (updatedQuests.Count > 0 || newQuests.Count > 0)
+            {
+                this.AddDataToReturnList(await this.GetUserQuests());
+            }
 
             return RequestResult("");
         }
@@ -370,9 +378,18 @@ namespace HappyTokenApi.Controllers
             var userStatController = new UserStatsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
             await userStatController.AddUserStatValueAsync(UserStatType.FRIEND_VISIT, 1);
 
+            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var updatedQuests = await questController.CheckQuestUpdates();
+            var newQuests = await questController.CheckNewQuests();
+
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+
+            if (updatedQuests.Count > 0 || newQuests.Count > 0)
+            {
+                this.AddDataToReturnList(await this.GetUserQuests());
+            }
 
             return RequestResult("");
         }

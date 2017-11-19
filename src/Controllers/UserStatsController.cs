@@ -7,45 +7,66 @@ using HappyTokenApi.Data.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using HappyTokenApi.Models;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace HappyTokenApi.Controllers
 {
     public class UserStatsController : DataController
     {
+        public List<string> UpdatedUserStatNames { get; private set; }
+
         //TODO: consider makes it better. This controller is used as a helper but is also a DataController.
         protected string m_UserId;
 
         public UserStatsController(string userId, CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
             this.m_UserId = userId;
+
+            this.UpdatedUserStatNames = new List<string>();
         }
 
         public async Task AddUserStatValueAsync(UserStatType statType, long incValue)
         {
             //Debug.Assert(!statType.ToString().EndsWith("_", StringComparison.CurrentCultureIgnoreCase), "The user stat should not has an addition value");
 
-            await this.AddUserStatValue(statType.ToString(), incValue);
+            var statName = statType.ToString();
+
+            await this.AddUserStatValue(statName, incValue);
+
+            this.AddUserStatToUpdatedList(statName);
         }
 
         public async Task AddUserStatValueAsync(UserStatType statType, string statNameValue, long incValue)
         {
             //Debug.Assert(statType.ToString().EndsWith("_", StringComparison.CurrentCultureIgnoreCase), "The user stat should has an addition value");
 
-            await this.AddUserStatValue(string.Format("{0}{1}", statType.ToString(), statNameValue), incValue);
+            var statName = string.Format("{0}{1}", statType.ToString(), statNameValue);
+
+            await this.AddUserStatValue(statName, incValue);
+
+            this.AddUserStatToUpdatedList(statName);
         }
 
         public async Task SetUserStatMaxValueAsync(UserStatType statType, long incValue)
         {
             //Debug.Assert(!statType.ToString().EndsWith("_", StringComparison.CurrentCultureIgnoreCase), "The user stat should not has an addition value");
 
-            await this.SetUserStatMaxValue(statType.ToString(), incValue);
+            var statName = statType.ToString();
+
+            await this.SetUserStatMaxValue(statName, incValue);
+
+            this.AddUserStatToUpdatedList(statName);
         }
 
         public async Task SetUserStatMaxValueAsync(UserStatType statType, string statNameValue, long incValue)
         {
             //Debug.Assert(statType.ToString().EndsWith("_", StringComparison.CurrentCultureIgnoreCase), "The user stat should not has an addition value");
 
-            await this.SetUserStatMaxValue(string.Format("{0}{1}", statType.ToString(), statNameValue), incValue);
+            var statName = string.Format("{0}{1}", statType.ToString(), statNameValue);
+
+            await this.SetUserStatMaxValue(statName, incValue);
+
+            this.AddUserStatToUpdatedList(statName);
         }
 
         protected async Task AddUserStatValue(string statName, long incValue)
@@ -92,6 +113,11 @@ namespace HappyTokenApi.Controllers
             }
 
             return dbUserStat;
+        }
+
+        private void AddUserStatToUpdatedList(string statName)
+        {
+            if (!this.UpdatedUserStatNames.Contains(statName)) this.UpdatedUserStatNames.Add(statName);
         }
     }
 }

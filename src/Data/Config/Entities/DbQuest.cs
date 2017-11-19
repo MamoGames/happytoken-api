@@ -13,7 +13,7 @@ namespace HappyTokenApi.Data.Config.Entities
         public string Description { get; set; }
 
         /// <summary>
-        /// Maximum number of seconds allowed to complete the game. Quest expire time mainly affect by this but also limited by other criterias
+        /// Maximum number of seconds allowed to complete the game. Quest expire time mainly affect by this but also limited by other criterias. 0 for unlimited
         /// </summary>
         /// <value>The time allowed.</value>
         public int TimeAllowed { get; set; }

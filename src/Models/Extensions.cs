@@ -73,11 +73,11 @@ namespace HappyTokenApi.Models
             {
                 Wallet = new Wallet
                 {
-                    Gold = questRewards.Gold.GetNewRandomValue(),
-                    Gems = questRewards.Gems.GetNewRandomValue(),
-                    HappyTokens = questRewards.HappyTokens.GetNewRandomValue(),
+                    Gold = questRewards.Gold == null ? 0 : questRewards.Gold.GetNewRandomValue(),
+                    Gems = questRewards.Gems == null ? 0 : questRewards.Gems.GetNewRandomValue(),
+                    HappyTokens = questRewards.HappyTokens == null ? 0 : questRewards.HappyTokens.GetNewRandomValue(),
                 },
-                Xp = questRewards.Xp.GetNewRandomValue(),
+                Xp = questRewards.Xp == null ? 0 : questRewards.Xp.GetNewRandomValue(),
             };
         }
 

@@ -342,6 +342,7 @@ namespace HappyTokenApi.Controllers
                 ExpiryDate = dbUserQuest.ExpiryDate,
                 RequiresValues = dbUserQuest.RequiresValues,
                 TargetValues = dbUserQuest.TargetValues,
+                Rewards = dbUserQuest.Rewards,
             };
 
             return userQuest;

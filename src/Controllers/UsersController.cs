@@ -30,18 +30,18 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("UserId is invalid.");
             }
 
-            //var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
-            //var updatedQuests = await questController.CheckQuestUpdates();
-            //var newQuests = await questController.CheckNewQuests();
+            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var updatedQuests = await questController.CheckQuestUpdates();
+            var newQuests = await questController.CheckNewQuests();
 
-            //await m_CoreDbContext.SaveChangesAsync();
+            await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
 
-            //if (updatedQuests.Count > 0 || newQuests.Count > 0)
-            //{
-            //    this.AddDataToReturnList(await this.GetUserQuests());
-            //}
+            if (updatedQuests.Count > 0 || newQuests.Count > 0)
+            {
+                this.AddDataToReturnList(await this.GetUserQuests());
+            }
 
             // Send the updated buildings back to the user
             return RequestResult("");

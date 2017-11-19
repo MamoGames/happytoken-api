@@ -48,10 +48,13 @@ namespace HappyTokenApi.Data.Config.Entities
                 }
             }
 
-            foreach (var minUserStat in this.MinUserStats)
+            if (this.MinUserStats != null)
             {
-                var userStat = userStats.Find(i => i.StatName == minUserStat.StatName);
-                if (userStat == null || userStat.StatValue < minUserStat.StatValue) return false;
+                foreach (var minUserStat in this.MinUserStats)
+                {
+                    var userStat = userStats.Find(i => i.StatName == minUserStat.StatName);
+                    if (userStat == null || userStat.StatValue < minUserStat.StatValue) return false;
+                }
             }
 
             if (allFinishedQuestsWithTime.ContainsKey(questId) && this.RepeatType != QuestRepeatType.Repeating)

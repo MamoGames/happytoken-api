@@ -133,7 +133,7 @@ namespace HappyTokenApi.Controllers
                             Rewards = quest.QuestRewards.GenerateRewards(),
                             RequiresValues = quest.RequiresStat.ToArray(),
                             IsCompleted = false,
-                            ExpiryDate = quest.TimeAllowed == 0 ? new DateTime(2100, 0, 0) : DateTime.UtcNow + new TimeSpan(0, 0, quest.TimeAllowed),
+                            ExpiryDate = quest.TimeAllowed == 0 ? new DateTime(2100, 1, 1) : DateTime.UtcNow + new TimeSpan(0, 0, quest.TimeAllowed),
                         };
 
                         var targetValues = new List<UserStat>();

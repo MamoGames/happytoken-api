@@ -39,8 +39,6 @@ namespace HappyTokenApi.Controllers
 
             this.AddDataToReturnList(await this.GetStatus());
 
-            this.AddDataToReturnList(await this.GetUserQuests());
-
             // Send the updated buildings back to the user
             return RequestResult("");
         }

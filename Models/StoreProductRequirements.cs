@@ -29,11 +29,11 @@ namespace HappyTokenApi.Models
         /// </summary>
         /// <returns><c>true</c>, if all criterias are met, <c>false</c> otherwise.</returns>
         /// <param name="profile">User profile</param>
-        public bool IsMet(string ProductID, UserLogin userLogin)
+        public bool IsMet(string ProductID, UserLogin userLogin, List<UserAvatar> userAvatars, List<UserBuilding> userBuildings, List<UserStorePurchaseRecord> userStoreRecords)
         {
             var now = DateTime.UtcNow;
 
-			if (this.After != default(DateTime) && now < this.After) return false;
+            if (this.After != default(DateTime) && now < this.After) return false;
 
             if (this.Before != default(DateTime) && now > this.Before) return false;
 
@@ -43,7 +43,7 @@ namespace HappyTokenApi.Models
             {
                 foreach (var requireBuilding in this.BuildingLevels)
                 {
-                    var building = userLogin.UserBuildings.Find(i => i.BuildingType == requireBuilding.BuildingType);
+                    var building = userBuildings.Find(i => i.BuildingType == requireBuilding.BuildingType);
                     if (building == null) return false;
 
                     if (building.Level < requireBuilding.Level) return false;
@@ -54,13 +54,13 @@ namespace HappyTokenApi.Models
             {
                 foreach (var avatar in this.Avatars)
                 {
-                    if (!(userLogin.UserAvatars.Exists(i => i.AvatarType == avatar && i.Level >= 1))) return false;
+                    if (!(userAvatars.Exists(i => i.AvatarType == avatar && i.Level >= 1))) return false;
                 }
             }
 
             if (this.MaxPurchaseCount > 0)
             {
-                var purchase = userLogin.UserStorePurchaseRecords.Find(i => i.StoreProductId == ProductID);
+                var purchase = userStoreRecords.Find(i => i.StoreProductId == ProductID);
 
                 if (purchase != null && purchase.Count >= this.MaxPurchaseCount) return false;
             }

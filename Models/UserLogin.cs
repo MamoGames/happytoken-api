@@ -13,16 +13,6 @@ namespace HappyTokenApi.Models
 
         public Happiness Happiness { get; set; }
 
-        public List<UserAvatar> UserAvatars { get; set; }
-
-        public List<UserBuilding> UserBuildings { get; set; }
-
-        public List<UserCake> UserCakes { get; set; }
-
-        public List<UserStorePurchaseRecord> UserStorePurchaseRecords { get; set; }
-
-        public UserDailyActions UserDailyActions { get; set; }
-
         public DailyRewards DailyRewards { get; set; }
     }
 }

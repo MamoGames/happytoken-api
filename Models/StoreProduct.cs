@@ -24,27 +24,17 @@ namespace HappyTokenApi.Models
 
         public bool IsO2O { get; set; }
 
-		public bool IsHighlighted { get; set; }
+        public bool IsHighlighted { get; set; }
 
-		public bool IsPromoted { get; set; }
+        public bool IsPromoted { get; set; }
 
-		public StoreProductCost Cost { get; set; }
+        public StoreProductCost Cost { get; set; }
 
         public StoreProductRequirements Requirements { get; set; }
 
-        /// <summary>
-        /// Whether the product should be shown to user. Used by client side.
-        /// </summary>
-        /// <returns><c>true</c>, if the product should be shown for purchase, <c>false</c> otherwise.</returns>
-        /// <param name="user">User.</param>
-        public bool IsVisibleTo(UserLogin user)
+        public T Clone<T>() where T : StoreProduct
         {
-			return IsVisible && (this.Requirements == null || this.Requirements.IsMet(this.ProductId, user)); 
+            return (T)this.MemberwiseClone();
         }
-
-		public T Clone<T>() where T:StoreProduct
-		{
-			return (T)this.MemberwiseClone();
-		}
     }
 }

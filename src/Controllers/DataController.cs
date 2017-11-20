@@ -101,29 +101,6 @@ namespace HappyTokenApi.Controllers
                 .Where(i => i.UserId == userId)
                 .SingleOrDefaultAsync();
 
-            var dbUserAvatars = await m_CoreDbContext.UsersAvatars
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            var dbUserBuildings = await m_CoreDbContext.UsersBuildings
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            var dbUserCakes = await m_CoreDbContext.UsersCakes
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            var dbUserStorePurchaseRecords = await m_CoreDbContext.UsersStorePurchaseRecords
-                .Where(i => i.UserId == userId)
-                .ToListAsync();
-
-            var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
-                .Where(i => i.UserId == userId)
-                .SingleOrDefaultAsync();
-
-            // Update the Daily actions, if we have any
-            dbUserDailyActions?.Update();
-
             // Check if we give the players their daily reward
             var dailyRewards = ProcessDailyReward(dbUserProfile, dbUserWallet);
 
@@ -133,11 +110,6 @@ namespace HappyTokenApi.Controllers
                 Profile = dbUserProfile,
                 Wallet = dbUserWallet,
                 Happiness = dbUserHappiness,
-                UserAvatars = dbUserAvatars.OfType<UserAvatar>().ToList(),
-                UserBuildings = dbUserBuildings.OfType<UserBuilding>().ToList(),
-                UserCakes = dbUserCakes.OfType<UserCake>().ToList(),
-                UserStorePurchaseRecords = dbUserStorePurchaseRecords.OfType<UserStorePurchaseRecord>().ToList(),
-                UserDailyActions = dbUserDailyActions,
                 DailyRewards = dailyRewards
             };
 
@@ -179,6 +151,77 @@ namespace HappyTokenApi.Controllers
 
             return dailyRewards;
         }
+
+        [Authorize]
+        [HttpGet("user_avatars")]
+        public async Task<IActionResult> GetUserAvatars()
+        {
+            var userId = this.GetClaimantUserId();
+
+            var dbUserAvatars = await m_CoreDbContext.UsersAvatars
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
+
+            return DataResult("user_avatars", dbUserAvatars.OfType<UserAvatar>().ToList());
+        }
+
+        [Authorize]
+        [HttpGet("user_buildings")]
+        public async Task<IActionResult> GetUserBuildings()
+        {
+            var userId = this.GetClaimantUserId();
+
+            var dbUserBuildings = await m_CoreDbContext.UsersBuildings
+               .Where(i => i.UserId == userId)
+               .ToListAsync();
+
+            return DataResult("user_buildings", dbUserBuildings.OfType<UserBuilding>().ToList());
+        }
+
+        [Authorize]
+        [HttpGet("user_cakes")]
+        public async Task<IActionResult> GetUserCakes()
+        {
+            var userId = this.GetClaimantUserId();
+
+            var dbUserCakes = await m_CoreDbContext.UsersCakes
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
+
+            return DataResult("user_cakes", dbUserCakes.OfType<UserCake>().ToList());
+        }
+
+        [Authorize]
+        [HttpGet("user_store_records")]
+        public async Task<IActionResult> GetUserStorePurchaseRecords()
+        {
+            var userId = this.GetClaimantUserId();
+
+            var dbUserStorePurchaseRecords = await m_CoreDbContext.UsersStorePurchaseRecords
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
+
+            return DataResult("user_store_records", dbUserStorePurchaseRecords.OfType<UserStorePurchaseRecord>().ToList());
+        }
+
+        [Authorize]
+        [HttpGet("user_daily_actions")]
+        public async Task<IActionResult> GetUserDailyActions()
+        {
+            var userId = this.GetClaimantUserId();
+
+            var dbUserDailyActions = await m_CoreDbContext.UsersDailyActions
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+            if (dbUserDailyActions.Update())
+            {
+                await m_CoreDbContext.SaveChangesAsync();
+            }
+
+            return DataResult("user_daily_actions", dbUserDailyActions as UserDailyActions);
+        }
+
 
         [Authorize]
         [HttpGet("friends")]

@@ -99,6 +99,9 @@ namespace HappyTokenApi.Controllers
                     if (resultBuyAvatar != null)
                     {
                         this.AddDataToReturnList(await this.GetStatus());
+                        this.AddDataToReturnList(await this.GetUserAvatars());
+                        this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
+
                         return RequestResult(resultBuyAvatar);
                     }
 
@@ -110,6 +113,9 @@ namespace HappyTokenApi.Controllers
                     if (resultBuyBuilding != null)
                     {
                         this.AddDataToReturnList(await this.GetStatus());
+                        this.AddDataToReturnList(await this.GetUserBuildings());
+                        this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
+
                         return RequestResult(resultBuyBuilding);
                     }
 
@@ -121,6 +127,7 @@ namespace HappyTokenApi.Controllers
                     if (resultBuyCurrencySpot != null)
                     {
                         this.AddDataToReturnList(await this.GetStatus());
+                        this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                         return RequestResult(resultBuyCurrencySpot);
                     }
 
@@ -131,6 +138,7 @@ namespace HappyTokenApi.Controllers
                     if (resultBuyResourceMine != null)
                     {
                         this.AddDataToReturnList(await this.GetStatus());
+                        this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                         return RequestResult(resultBuyResourceMine);
                     }
 
@@ -140,6 +148,7 @@ namespace HappyTokenApi.Controllers
                     if (result != null)
                     {
                         this.AddDataToReturnList(await this.GetStatus());
+                        this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                         return RequestResult(result);
                     }
 
@@ -195,6 +204,7 @@ namespace HappyTokenApi.Controllers
             if (result != null)
             {
                 this.AddDataToReturnList(await this.GetStatus());
+                this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                 return RequestResult(result);
             }
 
@@ -245,6 +255,7 @@ namespace HappyTokenApi.Controllers
             if (result != null)
             {
                 this.AddDataToReturnList(await this.GetStatus());
+                this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                 return RequestResult(result);
             }
 
@@ -307,6 +318,8 @@ namespace HappyTokenApi.Controllers
             if (result != null)
             {
                 this.AddDataToReturnList(await this.GetStatus());
+                this.AddDataToReturnList(await this.GetUserAvatars());
+                this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                 return RequestResult(result);
             }
 
@@ -529,6 +542,7 @@ namespace HappyTokenApi.Controllers
             if (result != null)
             {
                 this.AddDataToReturnList(await this.GetStatus());
+                this.AddDataToReturnList(await this.GetUserStorePurchaseRecords());
                 return RequestResult(result);
             }
 

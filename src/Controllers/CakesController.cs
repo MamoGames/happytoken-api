@@ -79,6 +79,7 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+            this.AddDataToReturnList(await this.GetUserCakes());
 
             var newCake = (UserCake)dbNewCake;
 
@@ -135,6 +136,7 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+            this.AddDataToReturnList(await this.GetUserCakes());
 
             if (updatedQuests.Count > 0 || newQuests.Count > 0)
             {

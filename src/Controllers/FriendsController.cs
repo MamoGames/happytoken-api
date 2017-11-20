@@ -282,7 +282,7 @@ namespace HappyTokenApi.Controllers
 
             if (dbUserDailyActions.GiftedCakeUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxCakeGiftPerDay) return BadRequest("User cannot gift more friends today.");
 
-            //dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
+            dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
 
             var dbUserHappiness = await m_CoreDbContext.UsersHappiness
                 .Where(i => i.UserId == userId)
@@ -309,6 +309,8 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+            this.AddDataToReturnList(await this.GetUserDailyActions());
+            this.AddDataToReturnList(await this.GetUserFriends());
 
             if (updatedQuests.Count > 0 || newQuests.Count > 0)
             {
@@ -387,6 +389,8 @@ namespace HappyTokenApi.Controllers
             await m_CoreDbContext.SaveChangesAsync();
 
             this.AddDataToReturnList(await this.GetStatus());
+            this.AddDataToReturnList(await this.GetUserDailyActions());
+            this.AddDataToReturnList(await this.GetUserFriends());
 
             if (updatedQuests.Count > 0 || newQuests.Count > 0)
             {

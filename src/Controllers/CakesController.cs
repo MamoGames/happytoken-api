@@ -127,7 +127,8 @@ namespace HappyTokenApi.Controllers
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_BAKED_TOTAL, 1);
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_BAKED_, ((int)cakeType).ToString(), 1);
 
-            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var questController = new QuestsController(m_CoreDbContext, m_ConfigDbContext);
+            questController.UserId = this.GetClaimantUserId();
             var updatedQuests = await questController.CheckQuestUpdates(userStatController.UpdatedUserStatNames);
             var newQuests = await questController.CheckNewQuests();
 

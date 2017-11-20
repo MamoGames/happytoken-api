@@ -17,12 +17,8 @@ namespace HappyTokenApi.Controllers
     public class QuestsController : DataController
     {
         //TODO: consider makes it better. This controller is used as a helper but is also a DataController.
-        protected string m_UserId;
+        public string UserId { get; set; }
 
-        public QuestsController(string userId, CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
-        {
-            this.m_UserId = userId;
-        }
 
         public QuestsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
         {
@@ -31,7 +27,7 @@ namespace HappyTokenApi.Controllers
         public async Task<List<DbUserQuest>> CheckQuestUpdates(List<string> updatedStatNames = null)
         {
             var dbUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == this.m_UserId && i.IsActive)
+                .Where(i => i.UserId == this.UserId && i.IsActive)
                 .ToListAsync();
 
             var updatedQuests = new List<DbUserQuest>();
@@ -57,7 +53,7 @@ namespace HappyTokenApi.Controllers
 
                             foreach (var requirement in dbUserQuest.TargetValues)
                             {
-                                var dbUserStat = await m_CoreDbContext.UsersStats.Where(i => i.UserId == this.m_UserId && i.StatName == requirement.StatName).SingleOrDefaultAsync();
+                                var dbUserStat = await m_CoreDbContext.UsersStats.Where(i => i.UserId == this.UserId && i.StatName == requirement.StatName).SingleOrDefaultAsync();
 
                                 if (dbUserStat == null)
                                 {
@@ -99,18 +95,18 @@ namespace HappyTokenApi.Controllers
             var newQuests = new List<DbUserQuest>();
 
             var dbUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == this.m_UserId && i.IsActive)
+                .Where(i => i.UserId == this.UserId && i.IsActive)
                 .ToListAsync();
 
             var allUserQuestIds = dbUserQuests.Select(i => i.QuestId).ToList();
 
             var allUserStats = await m_CoreDbContext.UsersStats
-                .Where(i => i.UserId == this.m_UserId)
+                .Where(i => i.UserId == this.UserId)
                 .ToListAsync();
 
             // build list of quest with last finished time
             var dbFinishedUserQuests = await m_CoreDbContext.UsersQuests
-                .Where(i => i.UserId == this.m_UserId && !i.IsActive && i.IsCompleted)
+                .Where(i => i.UserId == this.UserId && !i.IsActive && i.IsCompleted)
                 .ToListAsync();
             var allFinishedQuestsWithTime = new Dictionary<string, DateTime>();
 
@@ -137,7 +133,7 @@ namespace HappyTokenApi.Controllers
                         var newQuest = new DbUserQuest
                         {
                             UsersQuestId = Guid.NewGuid().ToString(),
-                            UserId = this.m_UserId,
+                            UserId = this.UserId,
                             QuestId = quest.QuestId,
                             CreateDate = DateTime.UtcNow,
                             IsActive = true,
@@ -174,5 +170,67 @@ namespace HappyTokenApi.Controllers
 
             return newQuests;
         }
+
+        [Authorize]
+        [HttpPost("complete", Name = nameof(CompleteQuest))]
+        public async Task<IActionResult> CompleteQuest([FromBody] string questId)
+        {
+            var userId = this.GetClaimantUserId();
+
+            if (!this.IsValidUserId(userId))
+            {
+                return BadRequest("UserId is invalid.");
+            }
+
+            // read status is stored on a individual entity
+            var dbUserQuest = await m_CoreDbContext.UsersQuests.Where(i => i.UserId == userId && i.QuestId == questId && i.IsActive)
+                .SingleOrDefaultAsync();
+
+            if (dbUserQuest == null)
+            {
+                return BadRequest("Completed quest not found");
+            }
+
+            if (!dbUserQuest.Rewards.Wallet.IsEmpty)
+            {
+                var dbUserWallet = await m_CoreDbContext.UsersWallets
+                    .Where(i => i.UserId == userId)
+                    .SingleOrDefaultAsync();
+
+                if (dbUserWallet == null)
+                {
+                    return BadRequest("Could not find Users Wallet.");
+                }
+
+                dbUserWallet.Gems += dbUserQuest.Rewards.Wallet.Gems;
+                dbUserWallet.Gold += dbUserQuest.Rewards.Wallet.Gold;
+                dbUserWallet.HappyTokens += dbUserQuest.Rewards.Wallet.HappyTokens;
+            }
+
+            if (dbUserQuest.Rewards.Xp > 0)
+            {
+                var dbUserProfile = await m_CoreDbContext.UsersProfiles
+                .Where(i => i.UserId == userId)
+                .SingleOrDefaultAsync();
+
+                if (dbUserProfile == null)
+                {
+                    return BadRequest("Could not find user profile.");
+                }
+
+                dbUserProfile.AddXp(dbUserQuest.Rewards.Xp);
+            }
+
+            // quest rewards already claimed
+            dbUserQuest.IsActive = false;
+
+            await m_CoreDbContext.SaveChangesAsync();
+
+            this.AddDataToReturnList(await this.GetStatus());
+            this.AddDataToReturnList(await this.GetUserQuests());
+
+            return RequestResult("");
+        }
+
     }
 }

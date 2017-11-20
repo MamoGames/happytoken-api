@@ -282,7 +282,7 @@ namespace HappyTokenApi.Controllers
 
             if (dbUserDailyActions.GiftedCakeUserIds.Length >= m_ConfigDbContext.AppDefaults.MaxCakeGiftPerDay) return BadRequest("User cannot gift more friends today.");
 
-            dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
+            //dbUserDailyActions.GiftedCakeUserIds = dbUserDailyActions.GiftedCakeUserIds.ToList().Append(friendUserId).ToArray();
 
             var dbUserHappiness = await m_CoreDbContext.UsersHappiness
                 .Where(i => i.UserId == userId)
@@ -301,7 +301,8 @@ namespace HappyTokenApi.Controllers
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_TOTAL, 1);
             await userStatController.AddUserStatValueAsync(UserStatType.CAKE_GIFTED_, ((int)sendCakeMessage.CakeType).ToString(), 1);
 
-            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var questController = new QuestsController(m_CoreDbContext, m_ConfigDbContext);
+            questController.UserId = this.GetClaimantUserId();
             var updatedQuests = await questController.CheckQuestUpdates(userStatController.UpdatedUserStatNames);
             var newQuests = await questController.CheckNewQuests();
 
@@ -378,7 +379,8 @@ namespace HappyTokenApi.Controllers
             var userStatController = new UserStatsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
             await userStatController.AddUserStatValueAsync(UserStatType.FRIEND_VISITED, 1);
 
-            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var questController = new QuestsController(m_CoreDbContext, m_ConfigDbContext);
+            questController.UserId = this.GetClaimantUserId();
             var updatedQuests = await questController.CheckQuestUpdates(userStatController.UpdatedUserStatNames);
             var newQuests = await questController.CheckNewQuests();
 

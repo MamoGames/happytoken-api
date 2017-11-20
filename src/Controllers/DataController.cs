@@ -322,7 +322,7 @@ namespace HappyTokenApi.Controllers
                 }
             }
 
-            return DataResult("user_quests", result);
+            return DataResult("quests", result);
         }
 
         protected UserQuest GetUserQuestFromDbUserQuest(DbUserQuest dbUserQuest)

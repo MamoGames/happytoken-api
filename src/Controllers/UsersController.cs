@@ -30,7 +30,8 @@ namespace HappyTokenApi.Controllers
                 return BadRequest("UserId is invalid.");
             }
 
-            var questController = new QuestsController(this.GetClaimantUserId(), m_CoreDbContext, m_ConfigDbContext);
+            var questController = new QuestsController(m_CoreDbContext, m_ConfigDbContext);
+            questController.UserId = this.GetClaimantUserId();
             var updatedQuests = await questController.CheckQuestUpdates();
             var newQuests = await questController.CheckNewQuests();
 

@@ -341,9 +341,35 @@ namespace HappyTokenApi.Controllers
                 CreateDate = dbUserQuest.CreateDate,
                 ExpiryDate = dbUserQuest.ExpiryDate,
                 RequiresValues = dbUserQuest.RequiresValues,
-                TargetValues = dbUserQuest.TargetValues,
                 Rewards = dbUserQuest.Rewards,
             };
+
+            var progress = new List<UserStat>();
+
+            foreach (var requiredStat in dbUserQuest.RequiresValues)
+            {
+                var dbUserStat = m_CoreDbContext.UsersStats.Where(i => i.UserId == dbUserQuest.UserId && i.StatName == requiredStat.StatName).SingleOrDefault();
+
+                if (dbUserStat == null)
+                {
+                    progress.Add(new UserStat
+                    {
+                        StatName = requiredStat.StatName,
+                        StatValue = 0,
+                    });
+                }
+                else
+                {
+                    var targetValue = dbUserQuest.TargetValues.ToList().Find(i => i.StatName == requiredStat.StatName);
+                    progress.Add(new UserStat
+                    {
+                        StatName = requiredStat.StatName,
+                        StatValue = dbUserStat.StatValue - (targetValue.StatValue - requiredStat.StatValue),
+                    });
+                }
+
+                userQuest.Progress = progress.ToArray();
+            }
 
             return userQuest;
         }

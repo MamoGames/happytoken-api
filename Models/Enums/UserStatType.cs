@@ -28,7 +28,7 @@ namespace HappyTokenApi.Models
         CAKE_BAKED_,
         CAKE_GIFTED_TOTAL,
         CAKE_GIFTED_,
-        FRIEND_VISIT,
+        FRIEND_VISITED,
         BUILDING_UPGRADE_TOTAL,
         BUILDING_UPGRADE_,
     }

@@ -19,8 +19,7 @@ namespace HappyTokenApi.Models
 
         public UserStat[] RequiresValues { get; set; }
 
-        // json serialized value
-        public UserStat[] TargetValues { get; set; }
+        public UserStat[] Progress { get; set; }
 
         public Rewards Rewards { get; set; }
     }

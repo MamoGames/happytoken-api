@@ -24,7 +24,11 @@ namespace HappyTokenApi.Controllers
             this.m_UserId = userId;
         }
 
-        public async Task<List<DbUserQuest>> CheckQuestUpdates()
+        public QuestsController(CoreDbContext coreDbContext, ConfigDbContext configDbContext) : base(coreDbContext, configDbContext)
+        {
+        }
+
+        public async Task<List<DbUserQuest>> CheckQuestUpdates(List<string> updatedStatNames = null)
         {
             var dbUserQuests = await m_CoreDbContext.UsersQuests
                 .Where(i => i.UserId == this.m_UserId && i.IsActive)
@@ -49,6 +53,7 @@ namespace HappyTokenApi.Controllers
                             // check complete
 
                             bool allMet = true;
+                            bool isProgressUpdated = false;
 
                             foreach (var requirement in dbUserQuest.TargetValues)
                             {
@@ -64,6 +69,8 @@ namespace HappyTokenApi.Controllers
                                     {
                                         allMet = false;
                                     }
+
+                                    if (updatedStatNames != null && updatedStatNames.Contains(requirement.StatName)) isProgressUpdated = true;
                                 }
                             }
 
@@ -72,6 +79,10 @@ namespace HappyTokenApi.Controllers
                                 // complete quest
                                 dbUserQuest.IsCompleted = true;
 
+                                updatedQuests.Add(dbUserQuest);
+                            }
+                            else if (isProgressUpdated)
+                            {
                                 updatedQuests.Add(dbUserQuest);
                             }
                         }
